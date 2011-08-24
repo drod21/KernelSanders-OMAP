@@ -1156,7 +1156,7 @@ static bool bio_attempt_front_merge(struct request_queue *q,
  * true if merge was successful, otherwise false.
  */
 static bool attempt_plug_merge(struct task_struct *tsk, struct request_queue *q,
-			       struct bio *bio)
+			       struct bio *bio, unsigned int *request_count)
 {
 	struct blk_plug *plug;
 	struct request *rq;
@@ -1165,9 +1165,12 @@ static bool attempt_plug_merge(struct task_struct *tsk, struct request_queue *q,
 	plug = tsk->plug;
 	if (!plug)
 		goto out;
+	*request_count = 0;
 
 	list_for_each_entry_reverse(rq, &plug->list, queuelist) {
 		int el_ret;
+
+		(*request_count)++;
 
 		if (rq->q != q)
 			continue;
@@ -1208,6 +1211,7 @@ int blk_queue_bio(struct request_queue *q, struct bio *bio)
 	struct blk_plug *plug;
 	int el_ret, rw_flags, where = ELEVATOR_INSERT_SORT;
 	struct request *req;
+	unsigned int request_count = 0;
 
 	/*
 	 * low level driver can indicate that it wants pages above a
@@ -1226,7 +1230,7 @@ int blk_queue_bio(struct request_queue *q, struct bio *bio)
 	 * Check if we can merge with the plugged list before grabbing
 	 * any locks.
 	 */
-	if (attempt_plug_merge(current, q, bio))
+	if (attempt_plug_merge(current, q, bio, &request_count))
 		goto out;
 
 	spin_lock_irq(q->queue_lock);
@@ -1293,6 +1297,8 @@ get_rq:
 			if (__rq->q != q)
 				plug->should_sort = 1;
 		}
+		if (request_count >= BLK_MAX_REQUEST_COUNT)
+			blk_flush_plug_list(plug, false);
 		list_add_tail(&req->queuelist, &plug->list);
 		plug->count++;
 		drive_stat_acct(req, 1);
