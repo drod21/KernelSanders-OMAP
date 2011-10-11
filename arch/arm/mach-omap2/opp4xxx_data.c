@@ -328,7 +328,9 @@ int __init omap4_opp_init(void)
 			omap4_mpu_opp_enable(1200000000);
 		/* The tuna PCB doesn't support 1.5GHz, so lets drop it to 1.35GHz */
 	//	if (omap4_has_mpu_1_5ghz())
+	//#ifdef CONFIG_CRISPY
 			omap4_mpu_opp_enable(1350000000);
+	//#endif
 	}
 
 	return r;
