@@ -1098,7 +1098,7 @@ static void rproc_loader_cont(const struct firmware *fw, void *context)
 	u64 bootaddr = 0;
 	struct fw_header *image;
 	struct fw_section *section;
-	int left, ret;
+	int left, ret = -EINVAL;
 
 	if (!fw) {
 		dev_err(dev, "%s: failed to load %s\n", __func__, fwfile);
@@ -1158,6 +1158,8 @@ out:
 complete_fw:
 	/* allow all contexts calling rproc_put() to proceed */
 	complete_all(&rproc->firmware_loading_complete);
+	if (ret)
+		_event_notify(rproc, RPROC_LOAD_ERROR, NULL);
 }
 
 static int rproc_loader(struct rproc *rproc)
