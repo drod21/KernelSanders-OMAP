@@ -1214,7 +1214,6 @@ static void wl_scan_prep(struct wl_scan_params *params, struct cfg80211_scan_req
 	params->passive_time = htod32(params->passive_time);
 	params->home_time = htod32(params->home_time);
 
-	/* if request is null just exit so it will be all channel broadcast scan */
 	if (!request)
 		return;
 
