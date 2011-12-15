@@ -306,9 +306,7 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	smp_store_cpu_info(cpu);
 
 	/*
-	 * OK, now it's safe to let the boot CPU continue.  Wait for
-	 * the CPU migration code to notice that the CPU is online
-	 * before we continue - which happens after __cpu_up returns.
+	 * OK, now it's safe to let the boot CPU continue.
 	 */
 	set_cpu_online(cpu, true);
 	complete(&cpu_running);
