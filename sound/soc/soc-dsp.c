@@ -1175,9 +1175,13 @@ int soc_dsp_runtime_update(struct snd_soc_dapm_widget *widget)
 			fe_clear_pending(fe, SNDRV_PCM_STREAM_PLAYBACK);
 		}
 
-		/* free old playback links */
-		fe_clear_pending(fe, SNDRV_PCM_STREAM_PLAYBACK);
-		be_disconnect(fe, SNDRV_PCM_STREAM_PLAYBACK);
+		/* update old playback paths */
+		stop = dsp_prune_old_paths(fe, SNDRV_PCM_STREAM_PLAYBACK, 1);
+		if (stop) {
+			dsp_run_old_update(fe, SNDRV_PCM_STREAM_PLAYBACK);
+			fe_clear_pending(fe, SNDRV_PCM_STREAM_PLAYBACK);
+			be_disconnect(fe, SNDRV_PCM_STREAM_PLAYBACK);
+		}
 
 capture:
 		/* skip if FE doesn't have capture capability */
@@ -1191,9 +1195,13 @@ capture:
 			fe_clear_pending(fe, SNDRV_PCM_STREAM_CAPTURE);
 		}
 
-		/* free old capture links */
-		fe_clear_pending(fe, SNDRV_PCM_STREAM_CAPTURE);
-		be_disconnect(fe, SNDRV_PCM_STREAM_CAPTURE);
+		/* update old capture paths */
+		stop = dsp_prune_old_paths(fe, SNDRV_PCM_STREAM_CAPTURE, 1);
+		if (stop) {
+			dsp_run_old_update(fe, SNDRV_PCM_STREAM_CAPTURE);
+			fe_clear_pending(fe, SNDRV_PCM_STREAM_CAPTURE);
+			be_disconnect(fe, SNDRV_PCM_STREAM_CAPTURE);
+		}
 	}
 
 	mutex_unlock(&widget->dapm->card->dsp_mutex);
