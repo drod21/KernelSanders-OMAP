@@ -690,6 +690,27 @@ static struct regulator_init_data tuna_clk32kaudio = {
 	.consumer_supplies      = tuna_clk32kaudio_supply,
 };
 
+static struct regulator_init_data tuna_vdd1 = {
+	.constraints = {
+		.valid_ops_mask		= REGULATOR_CHANGE_STATUS,
+		.always_on			= true,
+		.state_mem = {
+			.disabled		= true,
+		},
+		.initial_state		= PM_SUSPEND_MEM,
+	},
+};
+
+static struct regulator_init_data tuna_vdd2 = {
+	.constraints = {
+		.valid_ops_mask		= REGULATOR_CHANGE_STATUS,
+		.always_on			= true,
+		.state_mem = {
+			.disabled		= true,
+		},
+		.initial_state		= PM_SUSPEND_MEM,
+	},
+};
 
 static struct regulator_init_data tuna_vdd3 = {
 	.constraints = {
@@ -765,6 +786,8 @@ static struct twl4030_platform_data tuna_twldata = {
 	.madc		= &twl6030_madc,
 
 	/* SMPS */
+	.vdd1		= &tuna_vdd1,
+	.vdd2		= &tuna_vdd2,
 	.vdd3		= &tuna_vdd3,
 	.vmem		= &tuna_vmem,
 	.v2v1		= &tuna_v2v1,
