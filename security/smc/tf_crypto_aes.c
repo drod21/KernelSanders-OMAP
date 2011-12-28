@@ -779,6 +779,14 @@ static int aes_dma_stop(struct aes_hwa_ctx *ctx)
 			ctx->buflen, ctx->dma_size, 1);
 		if (count != ctx->dma_size)
 			err = -EINVAL;
+	} else {
+		dma_unmap_sg(NULL, ctx->out_sg, 1, DMA_FROM_DEVICE);
+		dma_unmap_sg(NULL, ctx->in_sg, 1, DMA_TO_DEVICE);
+
+#ifdef CONFIG_TF_DRIVER_FAULT_INJECTION
+		tf_aes_fault_injection(paes_reg->AES_CTRL,
+			sg_virt(ctx->out_sg));
+#endif
 	}
 
 	if (err || !ctx->total)
