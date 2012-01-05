@@ -64,6 +64,7 @@
 #include "timer-gp.h"
 
 #include "omap4-sar-layout.h"
+#include "omap_ram_console.h"
 #include "hsmmc.h"
 #include "control.h"
 #include "mux.h"
@@ -1403,6 +1404,8 @@ static void __init tuna_reserve(void)
 {
 	int i;
 	int ret;
+
+	omap_ram_console_init(OMAP_RAM_CONSOLE_START_DEFAULT, OMAP_RAM_CONSOLE_SIZE_DEFAULT);
 
 	/* do the static reservations first */
 	memblock_remove(TUNA_RAMCONSOLE_START, TUNA_RAMCONSOLE_SIZE);
