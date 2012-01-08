@@ -478,11 +478,15 @@ static ssize_t store_uv_mv_table(struct cpufreq_policy *policy,
 	struct opp *opp_cur;
 	struct voltagedomain *mpu_voltdm;
 	struct omap_volt_data *vdata;
+	unsigned int policymin, policymax;
 
 	mpu_voltdm = voltdm_lookup("mpu");
 
 	while(freq_table[i].frequency != CPUFREQ_TABLE_END)
 		i++;
+
+	policymin = policy->min;
+	policymax = policy->max;
 
 	for(i--; i >= 0; i--) {
 		if(freq_table[i].frequency != CPUFREQ_ENTRY_INVALID) {
@@ -491,9 +495,12 @@ static ssize_t store_uv_mv_table(struct cpufreq_policy *policy,
 				return -EINVAL;
 			}
 
+			policy->cur = policy->max = policy->min = freq_table[i].frequency;
+			voltdm_scale(mpu_voltdm, mpu_voltdm->curr_volt);
+			msleep(500);
+
 			/* Alter voltage. First do it in our opp */
-			opp_cur = opp_find_freq_exact(mpu_dev,
-				freq_table[i].frequency*1000, true);
+			opp_cur = opp_find_freq_exact(mpu_dev, freq_table[i].frequency*1000, true);
 			opp_cur->u_volt = volt_cur*1000;
 
 			/* Then we need to alter voltage domains */
@@ -516,25 +523,21 @@ static ssize_t store_uv_mv_table(struct cpufreq_policy *policy,
 					mpu_voltdm->vdd->dep_vdd_info->dep_table[i].dep_vdd_volt = 1100000;
 			}
 
-			/* Alter current voltage in voltdm, if appropriate */
-			if(volt_old == mpu_voltdm->curr_volt) {
-				mpu_voltdm->curr_volt = volt_cur*1000;
-			}
-
 			/* Non-standard sysfs interface: advance buf */
 			ret = sscanf(buf, "%s", size_cur);
 			buf += (strlen(size_cur)+1);
 
-			if (freq_table[i].frequency <= policy->max && freq_table[i].frequency >= policy->min) {
-				policy->cur = freq_table[i].frequency;
+			if (freq_table[i].frequency <= 1200000 && freq_table[i].frequency >= policymin) {
 				vdata = omap_voltage_get_curr_vdata(mpu_voltdm);
 				if (!vdata)
 					return -ENXIO;
-				omap_sr_disable(mpu_voltdm);
-				omap_voltage_calib_reset(mpu_voltdm);
-				voltdm_reset(mpu_voltdm);
-				omap_sr_enable(mpu_voltdm, vdata);
-				msleep(2000);
+				if (volt_old > mpu_voltdm->curr_volt->volt_nominal) {
+					omap_sr_disable(mpu_voltdm);
+					omap_voltage_calib_reset(mpu_voltdm);
+					voltdm_reset(mpu_voltdm);
+					omap_sr_enable(mpu_voltdm, vdata);
+					msleep(2500);
+				}
 			}
 		}
 		else {
@@ -542,6 +545,10 @@ static ssize_t store_uv_mv_table(struct cpufreq_policy *policy,
 				__func__, freq_table[i].frequency);
 		}
 	}
+
+	policy->min = policymin;
+	policy->max = policymax;
+
 	return count;
 }
 
