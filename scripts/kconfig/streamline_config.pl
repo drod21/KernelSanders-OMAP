@@ -268,6 +268,7 @@ sub convert_vars {
 foreach my $makefile (@makefiles) {
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     my $cont = 0;
 =======
     my $line = "";
@@ -287,6 +288,24 @@ foreach my $makefile (@makefiles) {
 =======
 	$_ = convert_vars($_, %make_vars);
 >>>>>>> adc0186... kconfig/streamline-config.pl: Fix parsing Makefile with variables
+=======
+    my $line = "";
+
+    open(MIN,$makefile) || die "Can't open $makefile";
+    while (<MIN>) {
+	# if this line ends with a backslash, continue
+	chomp;
+	if (/^(.*)\\$/) {
+	    $line .= $1;
+	    next;
+	}
+
+	$line .= $_;
+	$_ = $line;
+	$line = "";
+
+	my $objs;
+>>>>>>> e5303c2... kconfig/streamline-config.pl: Simplify backslash line concatination
 
 	# collect objects after obj-$(CONFIG_FOO_BAR)
 	if (/obj-\$\((CONFIG_[^\)]*)\)\s*[+:]?=\s*(.*)/) {
@@ -298,12 +317,6 @@ foreach my $makefile (@makefiles) {
 	    $make_vars{$1} = $2;
 	}
 	if (defined($objs)) {
-	    # test if the line ends with a backslash
-	    if ($objs =~ m,(.*)\\$,) {
-		$objs = $1;
-		$cont = 1;
-	    }
-
 	    foreach my $obj (split /\s+/,$objs) {
 		$obj =~ s/-/_/g;
 		if ($obj =~ /(.*)\.o$/) {
