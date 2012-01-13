@@ -60,7 +60,7 @@
 
 #define DISPC_MAX_NR_ISRS		8
 
-static struct clockdomain *l3_1_clkdm;
+static struct clockdomain *l3_1_clkdm, *l3_2_clkdm;
 
 struct omap_dispc_isr_data {
 	omap_dispc_isr_t	isr;
@@ -530,12 +530,13 @@ int dispc_runtime_get(void)
 
 		/*
 		 * With the DSS FIFO optimizations, ramdom lockups and reboots
-		 * are seen. It has been identified that L3_1 CD is idling and
-		 * not responding to the traffic initiated by DSS.  The
-		 * Workaround suggested by Hardware team is to keep the L3_1
-		 * CD in NO_SLEEP mode, when DSS is active.
+		 * are seen. It has been identified that L3_1 CD amd L3_2 is
+		 * idling and not responding to the traffic initiated by DSS.
+		 * The Workaround suggested by Hardware team is to keep the L3_1
+		 * and L3_2 CD in NO_SLEEP mode, when DSS is active.
 		 */
 		clkdm_deny_idle(l3_1_clkdm);
+		clkdm_deny_idle(l3_2_clkdm);
 
 		r = dss_runtime_get();
 		if (r)
@@ -584,10 +585,11 @@ void dispc_runtime_put(void)
 		dss_runtime_put();
 
 		/*
-		 * Restore the L3_1 CD to HW_AUTO, when DSS module idles.
-		 * When DSS is idle, we can allow L3_1 to idle.
+		 * Restore L3_1 amd L3_2 CD to HW_AUTO, when DSS module idles.
+		 * When DSS is idle, we can allow L3_1 and L3_2 to idle.
 		 */
 		clkdm_allow_idle(l3_1_clkdm);
+		clkdm_allow_idle(l3_2_clkdm);
 
 	}
 
@@ -3984,6 +3986,7 @@ static void _omap_dispc_initial_config(void)
 	}
 
 	l3_1_clkdm = clkdm_lookup("l3_1_clkdm");
+	l3_2_clkdm = clkdm_lookup("l3_2_clkdm");
 
 	/* FUNCGATED */
 	if (dss_has_feature(FEAT_FUNCGATED))
