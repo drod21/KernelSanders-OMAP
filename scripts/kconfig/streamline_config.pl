@@ -290,6 +290,7 @@ foreach my $makefile (@makefiles) {
 >>>>>>> adc0186... kconfig/streamline-config.pl: Fix parsing Makefile with variables
 =======
     my $line = "";
+    my %make_vars;
 
     open(MIN,$makefile) || die "Can't open $makefile";
     while (<MIN>) {
@@ -306,6 +307,8 @@ foreach my $makefile (@makefiles) {
 
 	my $objs;
 >>>>>>> e5303c2... kconfig/streamline-config.pl: Simplify backslash line concatination
+
+	$_ = convert_vars($_, %make_vars);
 
 	# collect objects after obj-$(CONFIG_FOO_BAR)
 	if (/obj-\$\((CONFIG_[^\)]*)\)\s*[+:]?=\s*(.*)/) {
