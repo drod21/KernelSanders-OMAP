@@ -242,25 +242,60 @@ if ($kconfig) {
     read_kconfig($kconfig);
 }
 
+sub convert_vars {
+    my ($line, %vars) = @_;
+
+    my $process = "";
+
+    while ($line =~ s/^(.*?)(\$\((.*?)\))//) {
+	my $start = $1;
+	my $variable = $2;
+	my $var = $3;
+
+	if (defined($vars{$var})) {
+	    $process .= $start . $vars{$var};
+	} else {
+	    $process .= $start . $variable;
+	}
+    }
+
+    $process .= $line;
+
+    return $process;
+}
+
 # Read all Makefiles to map the configs to the objects
 foreach my $makefile (@makefiles) {
 
+<<<<<<< HEAD
     my $cont = 0;
+=======
+    my $line = "";
+    my %make_vars;
+>>>>>>> adc0186... kconfig/streamline-config.pl: Fix parsing Makefile with variables
 
     open(MIN,$makefile) || die "Can't open $makefile";
     while (<MIN>) {
 	my $objs;
 
+<<<<<<< HEAD
 	# is this a line after a line with a backslash?
 	if ($cont && /(\S.*)$/) {
 	    $objs = $1;
 	}
 	$cont = 0;
+=======
+	$_ = convert_vars($_, %make_vars);
+>>>>>>> adc0186... kconfig/streamline-config.pl: Fix parsing Makefile with variables
 
 	# collect objects after obj-$(CONFIG_FOO_BAR)
 	if (/obj-\$\((CONFIG_[^\)]*)\)\s*[+:]?=\s*(.*)/) {
 	    $var = $1;
 	    $objs = $2;
+
+	# check if variables are set
+	} elsif (/^\s*(\S+)\s*[:]?=\s*(.*\S)/) {
+	    $make_vars{$1} = $2;
 	}
 	if (defined($objs)) {
 	    # test if the line ends with a backslash
