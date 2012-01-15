@@ -190,9 +190,7 @@ struct omap_volt_data omap446x_vdd_iva_volt_data[] = {
 };
 
 #define OMAP4460_VDD_CORE_OPP10_UV		750000
-#define OMAP4460_VDD_CORE_OPP25_UV		830000
 #define OMAP4460_VDD_CORE_OPP50_UV		900000
-#define OMAP4460_VDD_CORE_OPP75_UV		1075000
 #define OMAP4460_VDD_CORE_OPP100_UV		1100000
 #define OMAP4460_VDD_CORE_OPP100_OV_UV		1250000
 
@@ -206,9 +204,9 @@ struct omap_volt_data omap446x_vdd_core_volt_data[] = {
 
 /* OMAP 4460 MPU Core VDD dependency table */
 static struct omap_vdd_dep_volt omap446x_vdd_mpu_core_dep_data[] = {
-	{.main_vdd_volt = OMAP4460_VDD_MPU_OPP25_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP25_UV},
+	{.main_vdd_volt = OMAP4460_VDD_MPU_OPP25_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP50_UV},
 	{.main_vdd_volt = OMAP4460_VDD_MPU_OPP50_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP50_UV},
-	{.main_vdd_volt = OMAP4460_VDD_MPU_OPP75_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP75_UV},
+	{.main_vdd_volt = OMAP4460_VDD_MPU_OPP75_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP100_UV},
 	{.main_vdd_volt = OMAP4460_VDD_MPU_OPP100_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP100_UV},
 	{.main_vdd_volt = OMAP4460_VDD_MPU_OPPTURBO_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP100_UV},
 	{.main_vdd_volt = OMAP4460_VDD_MPU_OPPNITRO_UV, .dep_vdd_volt = OMAP4460_VDD_CORE_OPP100_UV},
@@ -242,11 +240,11 @@ struct omap_vdd_dep_info omap446x_vddiva_dep_info[] = {
 
 static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
 	/* MPU OPP1 - OPP25 */
-	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 250000000, OMAP4460_VDD_MPU_OPP25_UV),
+	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 250000000, OMAP4460_VDD_MPU_OPP50_UV),
 	/* MPU OPP2 - OPP50 */
 	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 350000000, OMAP4460_VDD_MPU_OPP50_UV),
 	/* MPU OPP3 - OPP75 */
-	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 500000000, OMAP4460_VDD_MPU_OPP75_UV),
+	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 500000000, OMAP4460_VDD_MPU_OPP100_UV),
 	/* MPU OPP4 - OPP100 */
 	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 700000000, OMAP4460_VDD_MPU_OPP100_UV),
 	/* MPU OPP5 - OPP-Turbo */
