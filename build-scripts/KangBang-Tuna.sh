@@ -37,14 +37,14 @@ mkdir -p $T/out/$PRODUCT
 mkdir -p $T/out/$PRODUCT/kernel
 mkdir -p $T/out/$PRODUCT/kernel/kernel
 mkdir -p $T/out/$PRODUCT/system/lib/modules
-mkdir -p $T/out/$PRODUCT/system/xbin
+#mkdir -p $T/out/$PRODUCT/system/xbin
 mkdir -p $T/out/$PRODUCT/META-INF/com/google/android
 
 # Move zImage and modules to the respective out directory for packaging
 
 echo "====== Moving zImage and modules ======"
 cp $T/arch/arm/boot/zImage $T/out/$PRODUCT/kernel/zImage
-cp $T/tools/update-zip-tools/zram $T/out/$PRODUCT/system/xbin/zram
+#cp $T/tools/update-zip-tools/zram $T/out/$PRODUCT/system/xbin/zram
 
 # Move update-zip-tools into the out directory for packaging
 
