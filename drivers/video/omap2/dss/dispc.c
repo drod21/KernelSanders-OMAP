@@ -42,7 +42,7 @@
 #include <mach/tiler.h>
 #include <plat/omap-pm.h>
 #include <video/omapdss.h>
-
+#include <../mach-omap2/powerdomain.h>
 #include "../clockdomain.h"
 #include "dss.h"
 #include "dss_features.h"
@@ -538,6 +538,9 @@ int dispc_runtime_get(void)
 		clkdm_deny_idle(l3_1_clkdm);
 		clkdm_deny_idle(l3_2_clkdm);
 
+		/* Removes latency constraint */
+		omap_pm_set_max_dev_wakeup_lat(&dispc.pdev->dev, &dispc.pdev->dev, -1);
+
 		r = dss_runtime_get();
 		if (r)
 			goto err_dss_get;
@@ -568,6 +571,7 @@ err_dss_get:
 
 void dispc_runtime_put(void)
 {
+	struct powerdomain *dss_powerdomain = pwrdm_lookup("dss_pwrdm");
 	mutex_lock(&dispc.runtime_lock);
 
 	if (--dispc.runtime_count == 0) {
@@ -576,6 +580,14 @@ void dispc_runtime_put(void)
 		DSSDBG("dispc_runtime_put\n");
 
 		dispc_save_context();
+
+		/* Sets DSS max latency constraint
+		* (allowing for deeper power state)
+		*/
+		omap_pm_set_max_dev_wakeup_lat(
+						&dispc.pdev->dev,
+						&dispc.pdev->dev,
+						dss_powerdomain->wakeup_lat[PWRDM_FUNC_PWRST_OFF]);
 
 		r = pm_runtime_put_sync(&dispc.pdev->dev);
 		WARN_ON(r);
