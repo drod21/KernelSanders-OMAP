@@ -1969,26 +1969,24 @@ static DEFINE_PER_CPU(unsigned long, rcu_dyntick_holdoff);
  */
 int rcu_needs_cpu(int cpu)
 {
-	int c = 0;
-	int snap;
-	int thatcpu;
+	/*
+	 * If there are no callbacks on this CPU, enter dyntick-idle mode.
+	 * Also reset state to avoid prejudicing later attempts.
+	 */
+	if (!rcu_cpu_has_callbacks(cpu)) {
+		per_cpu(rcu_dyntick_holdoff, cpu) = jiffies - 1;
+		per_cpu(rcu_dyntick_drain, cpu) = 0;
+		trace_rcu_prep_idle("No callbacks");
+		return;
+	}
 
-	/* Check for being in the holdoff period. */
-	if (per_cpu(rcu_dyntick_holdoff, cpu) == jiffies)
-		return rcu_needs_cpu_quick_check(cpu);
-
-	/* Don't bother unless we are the last non-dyntick-idle CPU. */
-	for_each_online_cpu(thatcpu) {
-		if (thatcpu == cpu)
-			continue;
-		snap = atomic_add_return(0, &per_cpu(rcu_dynticks,
-						     thatcpu).dynticks);
-		smp_mb(); /* Order sampling of snap with end of grace period. */
-		if ((snap & 0x1) != 0) {
-			per_cpu(rcu_dyntick_drain, cpu) = 0;
-			per_cpu(rcu_dyntick_holdoff, cpu) = jiffies - 1;
-			return rcu_needs_cpu_quick_check(cpu);
-		}
+	/*
+	 * If in holdoff mode, just return.  We will presumably have
+	 * refrained from disabling the scheduling-clock tick.
+	 */
+	if (per_cpu(rcu_dyntick_holdoff, cpu) == jiffies) {
+		trace_rcu_prep_idle("In holdoff");
+		return;
 	}
 
 	/* Check and update the rcu_dyntick_drain sequencing. */
@@ -1998,25 +1996,39 @@ int rcu_needs_cpu(int cpu)
 	} else if (--per_cpu(rcu_dyntick_drain, cpu) <= 0) {
 		/* We have hit the limit, so time to give up. */
 		per_cpu(rcu_dyntick_holdoff, cpu) = jiffies;
-		return rcu_needs_cpu_quick_check(cpu);
+		trace_rcu_prep_idle("Begin holdoff");
+		invoke_rcu_core();  /* Force the CPU out of dyntick-idle. */
+		return;
 	}
 
-	/* Do one step pushing remaining RCU callbacks through. */
+	/*
+	 * Do one step of pushing the remaining RCU callbacks through
+	 * the RCU core state machine.
+	 */
+#ifdef CONFIG_TREE_PREEMPT_RCU
+	if (per_cpu(rcu_preempt_data, cpu).nxtlist) {
+		rcu_preempt_qs(cpu);
+		force_quiescent_state(&rcu_preempt_state, 0);
+	}
+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
 	if (per_cpu(rcu_sched_data, cpu).nxtlist) {
 		rcu_sched_qs(cpu);
 		force_quiescent_state(&rcu_sched_state, 0);
-		c = c || per_cpu(rcu_sched_data, cpu).nxtlist;
 	}
 	if (per_cpu(rcu_bh_data, cpu).nxtlist) {
 		rcu_bh_qs(cpu);
 		force_quiescent_state(&rcu_bh_state, 0);
-		c = c || per_cpu(rcu_bh_data, cpu).nxtlist;
 	}
 
-	/* If RCU callbacks are still pending, RCU still needs this CPU. */
-	if (c)
+	/*
+	 * If RCU callbacks are still pending, RCU still needs this CPU.
+	 * So try forcing the callbacks through the grace period.
+	 */
+	if (rcu_cpu_has_callbacks(cpu)) {
+		trace_rcu_prep_idle("More callbacks");
 		invoke_rcu_core();
-	return c;
+	} else
+		trace_rcu_prep_idle("Callbacks drained");
 }
 
 #endif /* #else #if !defined(CONFIG_RCU_FAST_NO_HZ) */
