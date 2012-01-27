@@ -146,6 +146,7 @@ static int _rpmsg_omx_buffer_lookup(struct rpmsg_omx_instance *omx,
 	}
 
 #ifdef CONFIG_PVR_SGX
+<<<<<<< HEAD
 	/* how about an sgx buffer wrapping an ion handle? */
 	{
 		int fd;
@@ -157,6 +158,36 @@ static int _rpmsg_omx_buffer_lookup(struct rpmsg_omx_instance *omx,
 			!ion_phys(pvr_ion_client, handle, &paddr, &unused)) {
 			pa = (phys_addr_t)paddr;
 			goto to_va;
+=======
+		/* how about an sgx buffer wrapping an ion handle? */
+		{
+			int fd;
+			struct ion_handle *handles[2] = { NULL, NULL };
+			struct ion_client *pvr_ion_client;
+			ion_phys_addr_t paddr2;
+
+			fd = buffer;
+			PVRSRVExportFDToIONHandles(fd, &pvr_ion_client,
+					handles);
+
+			/* Get the 1st buffer's da */
+			if ((handles[0]) && !ion_phys(pvr_ion_client,
+					handles[0], &paddr, &unused)) {
+				ret = _rpmsg_pa_to_da((phys_addr_t)paddr, va);
+				if (ret)
+					goto exit;
+
+				/* Get the 2nd buffer's da in da2 */
+				if ((handles[1]) &&
+					!ion_phys(pvr_ion_client,
+					handles[1], &paddr2, &unused)) {
+					ret = _rpmsg_pa_to_da(
+						(phys_addr_t)paddr2, va2);
+					goto exit;
+				} else
+					goto exit;
+			}
+>>>>>>> b478def... rpmsg-omx: tiler_virt2phys called for 1D buffers
 		}
 	}
 #endif
