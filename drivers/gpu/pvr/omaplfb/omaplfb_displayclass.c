@@ -796,13 +796,19 @@ void OMAPLFBSwapHandler(OMAPLFB_BUFFER *psBuffer)
 #include <mach/tiler.h>
 #include <video/dsscomp.h>
 #include <plat/dsscomp.h>
+#include "../services_headers.h"
 
 void sgx_idle_log_flip(void);
 
 static void dsscomp_proxy_cmdcomplete(void * cookie, int i)
 {
+	COMMAND_COMPLETE_DATA *psCmdCompleteData = (COMMAND_COMPLETE_DATA *)cookie;
 	sgx_idle_log_flip();
 	/* XXX: assumes that there is only one display */
+	if (NULL == gapsDevInfo[0]->psSwapChain) {
+		psCmdCompleteData->ui32SrcSyncCount = 0;
+		psCmdCompleteData->ui32DstSyncCount = 0;
+	}
 	gapsDevInfo[0]->sPVRJTable.pfnPVRSRVCmdComplete(cookie, i);
 }
 
