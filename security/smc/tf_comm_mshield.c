@@ -365,13 +365,7 @@ static u32 tf_rpc_init(struct tf_comm *comm)
 
 	spin_lock(&(comm->lock));
 
-	dmac_flush_range((void *)comm->init_shared_buffer,
-		(void *)(((u32)(comm->init_shared_buffer)) + PAGE_SIZE));
-	outer_inv_range(__pa(comm->init_shared_buffer),
-		__pa(comm->init_shared_buffer) +  PAGE_SIZE);
-
-	protocol_version = ((struct tf_init_buffer *)
-				(comm->init_shared_buffer))->protocol_version;
+	protocol_version = comm->l1_buffer->protocol_version;
 
 	if ((GET_PROTOCOL_MAJOR_VERSION(protocol_version))
 			!= TF_S_PROTOCOL_MAJOR_VERSION) {

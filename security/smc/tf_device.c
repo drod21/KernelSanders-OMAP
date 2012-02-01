@@ -286,6 +286,19 @@ static int __init tf_device_register(void)
 	}
 
 #ifdef CONFIG_ANDROID
+#ifdef CONFIG_TF_DRIVER_CRYPTO_FIPS
+	error = tf_self_test_post_init(&(g_tf_dev.kobj));
+	/* N.B. error > 0 indicates a POST failure, which will not
+	   prevent the module from loading. */
+	if (error < 0) {
+		dprintk(KERN_ERR "tf_device_register(): "
+			"tf_self_test_post_vectors failed (error %d)!\n",
+			error);
+		goto post_failed;
+	}
+#endif
+#endif
+
 	tf_class = class_create(THIS_MODULE, TF_DEVICE_BASE_NAME);
 	device_create(tf_class, NULL,
 		dev->dev_number,

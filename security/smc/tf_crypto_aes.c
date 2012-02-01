@@ -630,6 +630,11 @@ static int aes_dma_start(struct aes_hwa_ctx *ctx)
 	struct omap_dma_channel_params dma_params;
 	struct tf_crypto_aes_operation_state *state =
 		crypto_ablkcipher_ctx(crypto_ablkcipher_reqtfm(ctx->req));
+<<<<<<< HEAD
+=======
+	static size_t last_count;
+	unsigned long flags;
+>>>>>>> 3d9717c... SMC: Fix PA load error 0xffff3020
 
 	if (sg_is_last(ctx->in_sg) && sg_is_last(ctx->out_sg)) {
 		in = IS_ALIGNED((u32)ctx->in_sg->offset, sizeof(u32));
@@ -734,6 +739,35 @@ static int aes_dma_start(struct aes_hwa_ctx *ctx)
 
 	omap_start_dma(ctx->dma_lch_in);
 	omap_start_dma(ctx->dma_lch_out);
+
+	spin_lock_irqsave(&ctx->lock, flags);
+	if (ctx->next_req) {
+		struct ablkcipher_request *req =
+			ablkcipher_request_cast(ctx->next_req);
+
+		if (!(ctx->next_req->flags & CRYPTO_TFM_REQ_DMA_VISIBLE)) {
+			err = dma_map_sg(NULL, req->src, 1, DMA_TO_DEVICE);
+			if (!err)
+				/* Silently fail for now... */
+				return 0;
+
+			err = dma_map_sg(NULL, req->dst, 1, DMA_FROM_DEVICE);
+			if (!err) {
+				dma_unmap_sg(NULL, req->src, 1, DMA_TO_DEVICE);
+				/* Silently fail for now... */
+				return 0;
+			}
+
+			ctx->next_req->flags |= CRYPTO_TFM_REQ_DMA_VISIBLE;
+			ctx->next_req = NULL;
+		}
+	}
+
+	if (ctx->backlog) {
+		ctx->backlog->complete(ctx->backlog, -EINPROGRESS);
+		ctx->backlog = NULL;
+	}
+	spin_unlock_irqrestore(&ctx->lock, flags);
 
 	return 0;
 }
