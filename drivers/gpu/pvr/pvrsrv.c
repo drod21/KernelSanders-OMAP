@@ -1053,7 +1053,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetMiscInfoKM(PVRSRV_MISC_INFO *psMiscInfo)
 			}
 			else if(psMiscInfo->sCacheOpCtl.eCacheOpType == PVRSRV_MISC_INFO_CPUCACHEOP_CLEAN)
 			{
-				if(psMiscInfo->sCacheOpCtl.bStridedCacheOp == IMG_TRUE)
+				/*if(psMiscInfo->sCacheOpCtl.bStridedCacheOp == IMG_TRUE)
 				{
 					IMG_BYTE *pbRowStart, *pbRowEnd, *pbRowThresh;
 					IMG_UINT32 ui32Stride;
@@ -1075,14 +1075,14 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetMiscInfoKM(PVRSRV_MISC_INFO *psMiscInfo)
 					while(pbRowEnd <= pbRowThresh);
 				}
 				else
-				{
+				{*/
 					if(!OSCleanCPUCacheRangeKM(psKernelMemInfo->sMemBlk.hOSMemHandle,
 									psMiscInfo->sCacheOpCtl.pvBaseVAddr,
 									psMiscInfo->sCacheOpCtl.ui32Length))
 					{
 						return PVRSRV_ERROR_CACHEOP_FAILED;
 					}
-				}
+				//}
 			}
 		}
 	}
