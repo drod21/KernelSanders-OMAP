@@ -427,11 +427,11 @@ typedef struct _PVRSRV_MISC_INFO_
 		
 		IMG_UINT32	ui32Length;
 
-		IMG_BYTE *pbRowStart;
+		/*IMG_BYTE *pbRowStart;
 		IMG_BYTE *pbRowEnd;
 		IMG_BYTE *pbRowThresh;
 		IMG_BOOL bStridedCacheOp;
-		IMG_UINT32 ui32Stride;
+		IMG_UINT32 ui32Stride;*/
 
 	} sCacheOpCtl;
 
