@@ -940,6 +940,17 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 		pr_debug("initialization failed\n");
 		goto err_unlock_policy;
 	}
+
+	if (policy->min > 350000) {
+		pr_info("min cpufreq policy set to 350 Mhz at boot");
+		policy->min = 350000;
+	}
+
+	if (policy->max > 1200000) {
+		pr_info("max cpufreq policy set to 1200 Mhz at boot");
+		policy->max = 1200000;
+	}
+
 	policy->user_policy.min = policy->min;
 	policy->user_policy.max = policy->max;
 
