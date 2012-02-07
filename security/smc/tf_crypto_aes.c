@@ -801,6 +801,8 @@ static int aes_dma_stop(struct aes_hwa_ctx *ctx)
 	omap_stop_dma(ctx->dma_lch_in);
 	omap_stop_dma(ctx->dma_lch_out);
 
+	tf_crypto_disable_clock(PUBLIC_CRYPTO_AES1_CLOCK_REG);
+
 	if (ctx->flags & FLAGS_FAST) {
 		dma_unmap_sg(NULL, ctx->out_sg, 1, DMA_FROM_DEVICE);
 		dma_unmap_sg(NULL, ctx->in_sg, 1, DMA_TO_DEVICE);
