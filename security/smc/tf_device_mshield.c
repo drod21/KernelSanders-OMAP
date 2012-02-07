@@ -348,8 +348,6 @@ static int __init tf_mem_setup(char *str)
 	return 0;
 }
 
-<<<<<<< HEAD
-=======
 #ifdef MODULE
 int __init tf_device_mshield_init(char *smc_mem)
 {
@@ -377,5 +375,4 @@ void __exit tf_device_mshield_exit(void)
 	dev->workspace_addr = 0;
 }
 #else
->>>>>>> 3d9717c... SMC: Fix PA load error 0xffff3020
 early_param("smc_mem", tf_mem_setup);
