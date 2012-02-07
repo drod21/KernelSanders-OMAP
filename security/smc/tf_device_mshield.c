@@ -374,5 +374,5 @@ void __exit tf_device_mshield_exit(void)
 	dev->workspace_size = 0;
 	dev->workspace_addr = 0;
 }
-#else
+#endif
 early_param("smc_mem", tf_mem_setup);
