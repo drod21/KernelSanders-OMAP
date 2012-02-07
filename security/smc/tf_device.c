@@ -297,7 +297,6 @@ static int __init tf_device_register(void)
 		goto post_failed;
 	}
 #endif
-#endif
 
 	tf_class = class_create(THIS_MODULE, TF_DEVICE_BASE_NAME);
 	device_create(tf_class, NULL,
