@@ -502,7 +502,7 @@ static bool tf_digest_hw_perform_dma(u8 *data, u32 nDataLength,
 		 * buffer which has correct properties from efficient DMA
 		 * transfers.
 		 */
-		if (tf_cpy_from(local_buf, data, length_loop, buffer_origin)) {
+		if (copy_from_user(dev->dma_buffer, data, length_loop)) {
 			omap_free_dma(dma_ch0);
 			ret = false;
 			goto exit;
