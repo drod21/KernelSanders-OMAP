@@ -44,7 +44,6 @@
 #define AUX_CLK_MIN	0
 #define AUX_CLK_MAX	5
 #define GPTIMERS_MAX	11
-#define MHZ		1000000
 #define MAX_MSG		(sizeof(struct rprm_ack) + sizeof(struct rprm_sdma))
 
 static struct dentry *rprm_dbg;
@@ -210,7 +209,7 @@ static int rprm_auxclk_request(struct rprm_elem *e, struct rprm_auxclk *obj)
 		goto error_aux_src;
 	}
 
-	ret = clk_set_rate(src_parent, (obj->parent_src_clk_rate * MHZ));
+	ret = clk_set_rate(src_parent, obj->parent_src_clk_rate);
 	if (ret) {
 		pr_err("%s: rate not supported by %s\n", __func__,
 					clk_src_name[obj->parent_src_clk]);
@@ -233,7 +232,7 @@ static int rprm_auxclk_request(struct rprm_elem *e, struct rprm_auxclk *obj)
 		goto error_aux_src_parent;
 	}
 
-	ret = clk_set_rate(acd->aux_clk, (obj->clk_rate * MHZ));
+	ret = clk_set_rate(acd->aux_clk, obj->clk_rate);
 	if (ret) {
 		pr_err("%s: rate not supported by %s\n", __func__, clk_name);
 		goto error_aux_src_parent;
