@@ -1766,12 +1766,8 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemoryKM(PVRSRV_PER_PROCESS_DATA	*
 
 #if defined(SUPPORT_PDUMP_MULTI_PROCESS)
 	
-	if(psMemInfo->pvLinAddrKM)
-	{
-		
-		PDUMPCOMMENT("Dump display surface");
-		PDUMPMEM(IMG_NULL, psMemInfo, ui32Offset, psMemInfo->uAllocSize, PDUMP_FLAGS_CONTINUOUS, ((BM_BUF*)psMemInfo->sMemBlk.hBuffer)->pMapping);
-	}
+	PDUMPCOMMENT("Dump display surface");
+	PDUMPMEM(IMG_NULL, psMemInfo, ui32Offset, psMemInfo->uAllocSize, PDUMP_FLAGS_CONTINUOUS, ((BM_BUF*)psMemInfo->sMemBlk.hBuffer)->pMapping);
 #endif
 	return PVRSRV_OK;
 
