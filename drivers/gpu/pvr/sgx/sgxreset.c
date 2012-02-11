@@ -29,7 +29,6 @@
 #include "services_headers.h"
 #include "sgxinfokm.h"
 #include "sgxconfig.h"
-#include "sgxutils.h"
 
 #include "pdump_km.h"
 
@@ -169,7 +168,7 @@ static IMG_VOID SGXResetSleep(PVRSRV_SGXDEV_INFO	*psDevInfo,
 #endif 
 
 	
-	SGXWaitClocks(psDevInfo, 100);
+	OSWaitus(100 * 1000000 / psDevInfo->ui32CoreClockSpeed);
 	if (bPDump)
 	{
 		PDUMPIDLWITHFLAGS(30, ui32PDUMPFlags);
