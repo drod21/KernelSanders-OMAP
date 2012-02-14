@@ -153,13 +153,13 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 	OPP_INITIALIZER("aess", "abe_clk", "iva", true, 196608000, OMAP4430_VDD_IVA_OPP100_UV),
 };
 
-#define OMAP4460_VDD_MPU_OPP25_UV		830000
-#define OMAP4460_VDD_MPU_OPP50_UV		900000
-#define OMAP4460_VDD_MPU_OPP75_UV		990000
-#define OMAP4460_VDD_MPU_OPP100_UV		1080000
-#define OMAP4460_VDD_MPU_OPPTURBO_UV		1170000
-#define OMAP4460_VDD_MPU_OPPNITRO_UV		1260000
-#define OMAP4460_VDD_MPU_OPPOC_UV		1350000
+#define OMAP4460_VDD_MPU_OPP25_UV		900000
+#define OMAP4460_VDD_MPU_OPP50_UV		975000
+#define OMAP4460_VDD_MPU_OPP75_UV		1000000
+#define OMAP4460_VDD_MPU_OPP100_UV		1078000
+#define OMAP4460_VDD_MPU_OPPTURBO_UV		1150000
+#define OMAP4460_VDD_MPU_OPPNITRO_UV		1250000
+#define OMAP4460_VDD_MPU_OPPOC_UV		1325000
 
 struct omap_volt_data omap446x_vdd_mpu_volt_data[] = {
 	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPP25_UV, OMAP44XX_CONTROL_FUSE_MPU_OPP25, 0xf4, 0x0c, OMAP_ABB_NOMINAL_OPP),
@@ -240,11 +240,11 @@ struct omap_vdd_dep_info omap446x_vddiva_dep_info[] = {
 
 static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
 	/* MPU OPP1 - OPP25 */
-	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 250000000, OMAP4460_VDD_MPU_OPP25_UV),
+	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 230000000, OMAP4460_VDD_MPU_OPP25_UV),
 	/* MPU OPP2 - OPP50 */
 	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 350000000, OMAP4460_VDD_MPU_OPP50_UV),
 	/* MPU OPP3 - OPP75 */
-	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 500000000, OMAP4460_VDD_MPU_OPP75_UV),
+	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 575000000, OMAP4460_VDD_MPU_OPP75_UV),
 	/* MPU OPP4 - OPP100 */
 	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 700000000, OMAP4460_VDD_MPU_OPP100_UV),
 	/* MPU OPP5 - OPP-Turbo */
