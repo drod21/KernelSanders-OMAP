@@ -46,9 +46,7 @@ u8 cpu_mask;
 
 static void _omap4_module_wait_ready(struct clk *clk)
 {
-       if (omap4_cm_wait_module_ready(clk->enable_reg) < 0)
-               pr_err("%s: Timeout waiting for module enable (%s: clkctrl = 0x%x)\n",
-                      __func__, clk->name, __raw_readl(clk->enable_reg));
+	omap4_cm_wait_module_ready(clk->enable_reg);
 }
 
 /**
