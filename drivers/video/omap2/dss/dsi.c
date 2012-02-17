@@ -4475,6 +4475,21 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
 	dsi_pll_uninit(dsidev, disconnect_lanes);
 }
 
+static int _dsi_wait_reset(struct platform_device *dsidev)
+ {
+         int t = 0;
+ 
+         while (REG_GET(dsidev, DSI_SYSSTATUS, 0, 0) == 0) {
+                 if (++t > 5) {
+                         DSSERR("soft reset failed\n");
+                         return -ENODEV;
+                 }
+                 udelay(1);
+         }
+ 
+         return 0;
+ }
+
 int omapdss_dsi_display_enable(struct omap_dss_device *dssdev)
 {
 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
