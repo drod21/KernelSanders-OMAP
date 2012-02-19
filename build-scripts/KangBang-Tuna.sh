@@ -6,7 +6,7 @@ TOOLCHAIN=tools/toolchain/arm-linux-androideabi-4.4.x/bin/arm-linux-androideabi-
 # RAMDISK_FILES=ramdisk
 # MKRAMDISK=$T/tools/update-zip-tools/mkbootfs
 # MKBOOTIMG=$T/tools/update-zip-tools/mkbootimg
-VERSION=1.1.3
+VERSION=1.1.5
 DATE=$(date +%Y-%m-%d_%H":"%M)
 
 # Setup kangbang-defconfigs and build zImage
@@ -35,7 +35,6 @@ schedtool -D -e make ARCH=arm CROSS_COMPILE=$CCOMPILER -j`grep 'processor' /proc
 
 mkdir -p $T/out/$PRODUCT
 mkdir -p $T/out/$PRODUCT/kernel
-mkdir -p $T/out/$PRODUCT/kernel/kernel
 mkdir -p $T/out/$PRODUCT/system/lib/modules
 #mkdir -p $T/out/$PRODUCT/system/xbin
 mkdir -p $T/out/$PRODUCT/META-INF/com/google/android
