@@ -351,6 +351,7 @@ EXPORT_SYMBOL(hsi_open);
 int hsi_write(struct hsi_device *dev, u32 *addr, unsigned int size)
 {
 	struct hsi_channel *ch;
+	struct hsi_dev *hsi_ctrl;
 	int err;
 
 	if (unlikely(!dev)) {
@@ -364,6 +365,10 @@ int hsi_write(struct hsi_device *dev, u32 *addr, unsigned int size)
 			dev, addr, size);
 		return -EINVAL;
 	}
+
+	ch = dev->ch;
+	hs_ctrl = ch->hsi_port->hsi_controller;
+
 	dev_dbg(dev->device.parent, "%s ch %d, @%x, size %d u32\n", __func__,
 		dev->n_ch, (u32) addr, size);
 
@@ -372,7 +377,6 @@ int hsi_write(struct hsi_device *dev, u32 *addr, unsigned int size)
 		return -EINVAL;
 	}
 
-	ch = dev->ch;
 	if (ch->write_data.addr != NULL) {
 		dev_err(dev->device.parent, "# Invalid request - Write "
 				"operation pending port %d channel %d\n",
@@ -434,6 +438,7 @@ EXPORT_SYMBOL(hsi_write);
 int hsi_read(struct hsi_device *dev, u32 *addr, unsigned int size)
 {
 	struct hsi_channel *ch;
+	struct hsi_dev *hsi_ctrl;
 	int err;
 
 	if (unlikely(!dev)) {
@@ -457,6 +462,7 @@ int hsi_read(struct hsi_device *dev, u32 *addr, unsigned int size)
 	}
 
 	ch = dev->ch;
+	hsi_ctrl = ch->hsi_port->hsi_controller;
 
 	spin_lock_bh(&hsi_ctrl->lock);
 
