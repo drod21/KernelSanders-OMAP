@@ -1,7 +1,7 @@
 #!/bin/sh
 # This script will make kernels, and then package them for release.
 
-PRODUCT1=KangBang-Tuna
+PRODUCT1=KernelSanders
 # PRODUCT2=<insert product name>
 # PRODUCT3=<insert product name>
 
