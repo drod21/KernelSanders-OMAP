@@ -1064,7 +1064,7 @@ static int omap_sr_autocomp_store(void *data, u64 val)
 	}
 
 	/* Sanity check */
-	if (val > 1) {
+	if (val && (val != 1)) {
 		pr_warning("%s: Invalid argument %lld\n", __func__, val);
 		return -EINVAL;
 	}
@@ -1098,8 +1098,6 @@ static int __init omap_sr_probe(struct platform_device *pdev)
 			__func__);
 		return -ENOMEM;
 	}
-
-	platform_set_drvdata(pdev, sr_info);
 
 	if (!pdata) {
 		dev_err(&pdev->dev, "%s: platform data missing\n", __func__);
@@ -1167,7 +1165,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
 	if (!sr_dbg_dir) {
 		sr_dbg_dir = debugfs_create_dir("smartreflex", NULL);
 		if (!sr_dbg_dir) {
-			ret = -ENOMEM;
+			ret = PTR_ERR(sr_dbg_dir);
 			pr_err("%s:sr debugfs dir creation failed(%d)\n",
 				__func__, ret);
 			goto err_iounmap;
@@ -1183,10 +1181,10 @@ static int __init omap_sr_probe(struct platform_device *pdev)
 	}
 	sr_info->dbg_dir = debugfs_create_dir(name, sr_dbg_dir);
 	kfree(name);
-	if (!sr_info->dbg_dir) {
+	if (IS_ERR(sr_info->dbg_dir)) {
 		dev_err(&pdev->dev, "%s: Unable to create debugfs directory\n",
 			__func__);
-		ret = -ENOMEM;
+		ret = PTR_ERR(sr_info->dbg_dir);
 		goto err_iounmap;
 	}
 
@@ -1200,10 +1198,10 @@ static int __init omap_sr_probe(struct platform_device *pdev)
 			&sr_info->err_minlimit);
 
 	nvalue_dir = debugfs_create_dir("nvalue", sr_info->dbg_dir);
-	if (!nvalue_dir) {
+	if (IS_ERR(nvalue_dir)) {
 		dev_err(&pdev->dev, "%s: Unable to create debugfs directory"
 			"for n-values\n", __func__);
-		ret = -ENOMEM;
+		ret = PTR_ERR(nvalue_dir);
 		goto err_debugfs;
 	}
 
@@ -1328,12 +1326,12 @@ static int __init sr_init(void)
 
 	return 0;
 }
-late_initcall(sr_init);
 
 static void __exit sr_exit(void)
 {
 	platform_driver_unregister(&smartreflex_driver);
 }
+late_initcall(sr_init);
 module_exit(sr_exit);
 
 MODULE_DESCRIPTION("OMAP Smartreflex Driver");

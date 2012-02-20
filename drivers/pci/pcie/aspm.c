@@ -728,15 +728,15 @@ void pcie_aspm_powersave_config_link(struct pci_dev *pdev)
  * never enter specific states
  */
 static void __pci_disable_link_state(struct pci_dev *pdev, int state, bool sem,
-                                    bool force)
+				     bool force)
 {
 	struct pci_dev *parent = pdev->bus->self;
 	struct pcie_link_state *link;
 
-       if (aspm_disabled && !force)
-                return;
+	if (aspm_disabled && !force)
+		return;
 
-       if (!pci_is_pcie(pdev))
+	if (!pci_is_pcie(pdev))
 		return;
 
 	if (pdev->pcie_type == PCI_EXP_TYPE_ROOT_PORT ||
@@ -784,13 +784,12 @@ void pcie_clear_aspm(struct pci_bus *bus)
 	 * Clear any ASPM setup that the firmware has carried out on this bus
 	 */
 	list_for_each_entry(child, &bus->devices, bus_list) {
-               __pci_disable_link_state(child, PCIE_LINK_STATE_L0S |
-                                        PCIE_LINK_STATE_L1 |
-                                        PCIE_LINK_STATE_CLKPM,
-                                        false, true);
-       }
+		__pci_disable_link_state(child, PCIE_LINK_STATE_L0S |
+					 PCIE_LINK_STATE_L1 |
+					 PCIE_LINK_STATE_CLKPM,
+					 false, true);
+	}
 }
-
 
 static int pcie_aspm_set_policy(const char *val, struct kernel_param *kp)
 {
@@ -964,14 +963,14 @@ __setup("pcie_aspm=", pcie_aspm_disable);
 
 void pcie_no_aspm(void)
 {
-       /*
-        * Disabling ASPM is intended to prevent the kernel from modifying
-        * existing hardware state, not to clear existing state. To that end:
-        * (a) set policy to POLICY_DEFAULT in order to avoid changing state
-        * (b) prevent userspace from changing policy
-        */
-       if (!aspm_force) {
-               aspm_policy = POLICY_DEFAULT;
+	/*
+	 * Disabling ASPM is intended to prevent the kernel from modifying
+	 * existing hardware state, not to clear existing state. To that end:
+	 * (a) set policy to POLICY_DEFAULT in order to avoid changing state
+	 * (b) prevent userspace from changing policy
+	 */
+	if (!aspm_force) {
+		aspm_policy = POLICY_DEFAULT;
 		aspm_disabled = 1;
 	}
 }

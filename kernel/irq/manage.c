@@ -1017,10 +1017,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		if (new->flags & IRQF_ONESHOT)
 			desc->istate |= IRQS_ONESHOT;
 
-		if (irq_settings_can_autoenable(desc)) {
+		if (irq_settings_can_autoenable(desc))
 			irq_startup(desc);
-			check_irq_resend(desc, irq);
-		} else
+		else
 			/* Undo nested disables: */
 			desc->depth = 1;
 

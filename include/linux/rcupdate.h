@@ -81,6 +81,16 @@ extern void synchronize_sched(void);
 extern void rcu_barrier_bh(void);
 extern void rcu_barrier_sched(void);
 
+static inline void __rcu_read_lock_bh(void)
+{
+	local_bh_disable();
+}
+
+static inline void __rcu_read_unlock_bh(void)
+{
+	local_bh_enable();
+}
+
 #ifdef CONFIG_PREEMPT_RCU
 
 extern void __rcu_read_lock(void);
@@ -146,8 +156,6 @@ static inline void rcu_exit_nohz(void)
 #include <linux/rcutree.h>
 #elif defined(CONFIG_TINY_RCU) || defined(CONFIG_TINY_PREEMPT_RCU)
 #include <linux/rcutiny.h>
-#elif defined(CONFIG_JRCU)
-#include <linux/jrcu.h>
 #else
 #error "Unknown RCU implementation specified to kernel configuration"
 #endif
@@ -622,7 +630,7 @@ static inline void rcu_read_unlock(void)
  */
 static inline void rcu_read_lock_bh(void)
 {
-	local_bh_disable();
+	__rcu_read_lock_bh();
 	__acquire(RCU_BH);
 	rcu_read_acquire_bh();
 }
@@ -636,7 +644,7 @@ static inline void rcu_read_unlock_bh(void)
 {
 	rcu_read_release_bh();
 	__release(RCU_BH);
-	local_bh_enable();
+	__rcu_read_unlock_bh();
 }
 
 /**

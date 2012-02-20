@@ -32,7 +32,6 @@
 #include <linux/notifier.h>
 #include <linux/memblock.h>
 #include <linux/remoteproc.h>
-#include <linux/delay.h>
 #include <asm/io.h>
 
 #include <plat/rpmsg.h>
@@ -147,7 +146,7 @@ static void omap_rpmsg_notify(struct virtqueue *vq)
 {
 	struct omap_rpmsg_vq_info *rpvq = vq->priv;
 	int ret;
-	int count = 15;
+	int count = 5;
 
 	pr_debug("sending mailbox msg: %d\n", rpvq->vq_id);
 	do {
@@ -156,8 +155,6 @@ static void omap_rpmsg_notify(struct virtqueue *vq)
 		if (rpvq->rpdev->mbox)
 			break;
 		mutex_unlock(&rpvq->rpdev->lock);
-		msleep(30);
-		pr_err("Recovering from NULL mbox handle situation...\n");
 	} while (--count);
 	if (!count) {
 		pr_err("mbox handle is NULL\n");
@@ -356,7 +353,6 @@ static void omap_rpmsg_del_vqs(struct virtio_device *vdev)
 
 	list_for_each_entry_safe(vq, n, &vdev->vqs, list) {
 		struct omap_rpmsg_vq_info *rpvq = vq->priv;
-		iounmap(rpvq->addr);
 		vring_del_virtqueue(vq);
 		kfree(rpvq);
 	}

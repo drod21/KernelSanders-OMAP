@@ -47,8 +47,12 @@ void mmc_power_off(struct mmc_host *host);
 
 static inline void mmc_delay(unsigned int ms)
 {
-	unsigned long us = ms * USEC_PER_MSEC;
-	usleep_range(us, us + 1000);
+	if (ms < 1000 / HZ) {
+		cond_resched();
+		mdelay(ms);
+	} else {
+		msleep(ms);
+	}
 }
 
 void mmc_rescan(struct work_struct *work);

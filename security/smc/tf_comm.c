@@ -208,7 +208,6 @@ struct tf_coarse_page_table *tf_alloc_coarse_page_table(
 		}
 
 		array->type = type;
-		array->ref_count = 0;
 		INIT_LIST_HEAD(&(array->list));
 
 		/* now allocate the actual page the page descriptor describes */
@@ -496,7 +495,7 @@ inline struct page *tf_l2_page_descriptor_to_page(u32 l2_page_descriptor)
  */
 static void tf_get_l2_page_descriptor(
 	u32 *l2_page_descriptor,
-	u32 flags, struct mm_struct *mm)
+	u32 flags, struct mm_struct *mm, struct vm_area_struct *vmas)
 {
 	u32 descriptor;
 	struct page *page;
@@ -508,6 +507,11 @@ static void tf_get_l2_page_descriptor(
 	if (*l2_page_descriptor == L2_DESCRIPTOR_FAULT)
 		return;
 
+	if (vmas->vm_flags & VM_IO) {
+		*l2_page_descriptor = L2_DESCRIPTOR_FAULT;
+		dprintk(KERN_ERR "Memory mapped I/O or similar detected\n");
+		return;
+	}
 	page = (struct page *) (*l2_page_descriptor);
 
 	descriptor = TF_DEFAULT_COMMON_DESCRIPTORS;
@@ -789,7 +793,8 @@ int tf_fill_descriptor_table(
 				tf_get_l2_page_descriptor(
 					&coarse_pg_table->descriptors[j],
 					flags,
-					current->mm);
+					current->mm,
+					vmas[j]);
 				/*
 				 * Reject Strongly-Ordered or Device Memory
 				 */
@@ -814,22 +819,20 @@ int tf_fill_descriptor_table(
 			}
 		} else {
 			/* Kernel-space memory */
-			dprintk(KERN_INFO
-				"tf_fill_descriptor_table: "
-				"buffer starting at %p\n",
-			       (void *)buffer_offset_vaddr);
-			for (j = page_shift; j < pages_to_get; j++) {
-				struct page *page;
+			for (j = page_shift;
+				  j < pages_to_get;
+				  j++) {
 				void *addr =
 					(void *)(buffer_offset_vaddr +
 						(j - page_shift) * PAGE_SIZE);
-
-				if (is_vmalloc_addr(
-						(void *) buffer_offset_vaddr))
-					page = vmalloc_to_page(addr);
-				else
-					page = virt_to_page(addr);
-
+				if (!is_vmalloc_addr(addr)) {
+					dprintk(KERN_ERR
+						"tf_fill_descriptor_table: "
+						"cannot handle address %p\n",
+						addr);
+					goto error;
+				}
+				struct page *page = vmalloc_to_page(addr);
 				if (page == NULL) {
 					dprintk(KERN_ERR
 						"tf_fill_descriptor_table: "
@@ -844,7 +847,8 @@ int tf_fill_descriptor_table(
 				tf_get_l2_page_descriptor(
 					&coarse_pg_table->descriptors[j],
 					flags,
-					&init_mm);
+					&init_mm,
+					vmas[j]);
 			}
 		}
 

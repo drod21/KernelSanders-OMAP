@@ -348,31 +348,4 @@ static int __init tf_mem_setup(char *str)
 	return 0;
 }
 
-#ifdef MODULE
-int __init tf_device_mshield_init(char *smc_mem)
-{
-	if (smc_mem != NULL)
-		tf_mem_setup(smc_mem);
-	tf_allocate_workspace();
-	return 0;
-}
-
-void __exit tf_device_mshield_exit(void)
-{
-	struct tf_device *dev = tf_get_device();
-	if (dev == NULL)
-		return;
-
-	if (tf_ctrl_class != NULL) {
-		device_destroy(tf_ctrl_class, dev->dev_number + 1);
-		class_destroy(tf_ctrl_class);
-		tf_ctrl_class = NULL;
-	}
-	cdev_del(&(dev->cdev_ctrl));
-	unregister_chrdev_region(dev->dev_number + 1, 1);
-
-	dev->workspace_size = 0;
-	dev->workspace_addr = 0;
-}
-#endif
 early_param("smc_mem", tf_mem_setup);

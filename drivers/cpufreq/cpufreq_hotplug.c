@@ -30,14 +30,14 @@
 #include <linux/err.h>
 #include <linux/slab.h>
 
-/* greater than 85% avg load across online CPUs increases frequency */
-#define DEFAULT_UP_FREQ_MIN_LOAD			(85)
+/* greater than 80% avg load across online CPUs increases frequency */
+#define DEFAULT_UP_FREQ_MIN_LOAD			(80)
 
-/* Keep 15% of idle under the up threshold when decreasing the frequency */
-#define DEFAULT_FREQ_DOWN_DIFFERENTIAL			(15)
+/* Keep 10% of idle under the up threshold when decreasing the frequency */
+#define DEFAULT_FREQ_DOWN_DIFFERENTIAL			(10)
 
-/* less than 40% avg load across online CPUs decreases frequency */
-#define DEFAULT_DOWN_FREQ_MAX_LOAD			(40)
+/* less than 35% avg load across online CPUs decreases frequency */
+#define DEFAULT_DOWN_FREQ_MAX_LOAD			(35)
 
 /* default sampling period (uSec) is bogus; 10x ondemand's default for x86 */
 #define DEFAULT_SAMPLING_PERIOD				(100000)
@@ -46,7 +46,7 @@
 #define DEFAULT_HOTPLUG_IN_SAMPLING_PERIODS		(5)
 
 /* default number of sampling periods to average before hotplug-out decision */
-#define DEFAULT_HOTPLUG_OUT_SAMPLING_PERIODS		(200)
+#define DEFAULT_HOTPLUG_OUT_SAMPLING_PERIODS		(20)
 
 static void do_dbs_timer(struct work_struct *work);
 static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
@@ -592,6 +592,7 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
 {
 	/* We want all related CPUs to do sampling nearly on same jiffy */
 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
+	delay -= jiffies % delay;
 
 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
 	queue_delayed_work_on(dbs_info->cpu, khotplug_wq, &dbs_info->work,

@@ -1312,17 +1312,14 @@ static int omap_gpio_resume(struct device *dev)
 static void omap_gpio_save_context(struct gpio_bank *bank);
 static void omap_gpio_restore_context(struct gpio_bank *bank);
 
-static void omap2_gpio_set_wakeupenables(struct gpio_bank *bank, bool suspend)
+static void omap2_gpio_set_wakeupenables(struct gpio_bank *bank)
 {
 	unsigned long pad_wakeup;
 	int i;
 
 	bank->context.pad_set_wakeupenable = 0;
 
-	if (suspend)
-		pad_wakeup = bank->suspend_wakeup;
-	else
-		pad_wakeup = __raw_readl(bank->base + bank->regs->irqenable);
+	pad_wakeup = __raw_readl(bank->base + bank->regs->irqenable);
 
 	/*
 	 * HACK: Ignore gpios that have multiple sources.
@@ -1581,7 +1578,7 @@ int omap2_gpio_prepare_for_idle(int off_mode, bool suspend)
 		if (!bank->mod_usage)
 			continue;
 
-		omap2_gpio_set_wakeupenables(bank, suspend);
+		omap2_gpio_set_wakeupenables(bank);
 
 		if (omap2_gpio_set_edge_wakeup(bank, suspend))
 			ret = -EBUSY;

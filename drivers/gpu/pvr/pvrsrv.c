@@ -32,7 +32,6 @@
 #include "pdump_km.h"
 #include "deviceid.h"
 #include "ra.h"
-#include "sysfs.h"
 #if defined(TTRACE)
 #include "ttrace.h"
 #endif
@@ -203,12 +202,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVInit(PSYS_DATA psSysData)
 {
 	PVRSRV_ERROR	eError;
 
-	eError = PVRSRVCreateSysfsEntry();
-	if (eError != PVRSRV_OK)
-	{
-		goto Error;
-	}
-
+	
 	eError = ResManInit();
 	if (eError != PVRSRV_OK)
 	{
@@ -1053,40 +1047,12 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetMiscInfoKM(PVRSRV_MISC_INFO *psMiscInfo)
 			}
 			else if(psMiscInfo->sCacheOpCtl.eCacheOpType == PVRSRV_MISC_INFO_CPUCACHEOP_CLEAN)
 			{
-				/*if(psMiscInfo->sCacheOpCtl.bStridedCacheOp == IMG_TRUE)
-				{
-					IMG_BYTE *pbRowStart, *pbRowEnd, *pbRowThresh;
-					IMG_UINT32 ui32Stride;
-					pbRowStart  = psMiscInfo->sCacheOpCtl.pbRowStart;
-					pbRowEnd    = psMiscInfo->sCacheOpCtl.pbRowEnd;
-					pbRowThresh = psMiscInfo->sCacheOpCtl.pbRowThresh;
-					ui32Stride  = psMiscInfo->sCacheOpCtl.ui32Stride;
-					do
-					{
-						if(!OSCleanCPUCacheRangeKM(psKernelMemInfo->sMemBlk.hOSMemHandle,
-										(IMG_VOID *)pbRowStart,
-										(IMG_UINT32)(pbRowEnd - pbRowStart)))
-						{
-							return PVRSRV_ERROR_CACHEOP_FAILED;
-						}
-						pbRowStart += ui32Stride;
-						pbRowEnd   += ui32Stride;
-					}
-					while(pbRowEnd <= pbRowThresh);
-				}
-				else
-				{
-					if(!OSCleanCPUCacheRangeKM(psKernelMemInfo->sMemBlk.hOSMemHandle,
-									psMiscInfo->sCacheOpCtl.pvBaseVAddr,
-									psMiscInfo->sCacheOpCtl.ui32Length))
-					{
-						return PVRSRV_ERROR_CACHEOP_FAILED;
-					}
-				}*/
 				if(!OSCleanCPUCacheRangeKM(psKernelMemInfo->sMemBlk.hOSMemHandle,
-								psMiscInfo->sCacheOpCtl.pvBaseVAddr,
-								psMiscInfo->sCacheOpCtl.ui32Length))
+										   psMiscInfo->sCacheOpCtl.pvBaseVAddr,
+										   psMiscInfo->sCacheOpCtl.ui32Length))
+				{
 					return PVRSRV_ERROR_CACHEOP_FAILED;
+				}
 			}
 		}
 	}

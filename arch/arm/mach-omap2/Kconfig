@@ -34,6 +34,7 @@ config ARCH_OMAP3
 	default y
 	select CPU_V7
 	select USB_ARCH_HAS_EHCI
+	select ARM_L1_CACHE_SHIFT_6 if !ARCH_OMAP4
 	select ARCH_HAS_OPP
 	select PM_OPP if PM
 
@@ -332,7 +333,6 @@ config MACH_TUNA
 	select OMAP_PACKAGE_CBS
 	select REGULATOR_FIXED_VOLTAGE
 	select OMAP_TPS6236X
-	select OMAP_RAM_CONSOLE
 
 config OMAP3_EMU
 	bool "OMAP3 debugging peripherals"
@@ -373,16 +373,6 @@ config OMAP_FIQ_DEBUGGER
 	help
 	  Enables the serial FIQ debugger on OMAP"
 
-config OMAP_RAM_CONSOLE
-	bool "Enable OMAP support for Android RAM console"
-	depends on ANDROID_RAM_CONSOLE
-	help
-	  Select this option to enable Android RAM console support on OMAP.
-	  This allows saving the kernel printk messages to a buffer in RAM, so
-	  that after a kernel panic they can be viewed in the next kernel
-	  invocation, by accessing /proc/last_kmsg
-	  NOTE: Board file needs to invoke relevant api to enable the support
-
 config OMAP4_PPA_CPU1_ONLINE_BUG
 	bool "Enable Support for CPU1 ONLINE WA for OSWR/OFF"
 	depends on ARCH_OMAP4
@@ -399,6 +389,7 @@ config OMAP4_PPA_CPU1_ONLINE_BUG
 
 	  If, on the other hand, you do not understand the change, leave the
 	  default as enabled.
+
 endmenu
 
 endif

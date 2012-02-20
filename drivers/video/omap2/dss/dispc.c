@@ -42,7 +42,7 @@
 #include <mach/tiler.h>
 #include <plat/omap-pm.h>
 #include <video/omapdss.h>
-#include <../mach-omap2/powerdomain.h>
+
 #include "../clockdomain.h"
 #include "dss.h"
 #include "dss_features.h"
@@ -529,17 +529,33 @@ int dispc_runtime_get(void)
 		DSSDBG("dispc_runtime_get\n");
 
 		/*
-		 * With the DSS FIFO optimizations, ramdom lockups and reboots
-		 * are seen. It has been identified that L3_1 CD amd L3_2 is
-		 * idling and not responding to the traffic initiated by DSS.
-		 * The Workaround suggested by Hardware team is to keep the L3_1
-		 * and L3_2 CD in NO_SLEEP mode, when DSS is active.
+		 * OMAP4 ERRATUM xxxx: Mstandby and disconnect protocol issue
+		 * Impacts: all OMAP4 devices
+		 * Simplfied Description:
+		 * issue #1: The handshake between IP modules on L3_1 and L3_2
+		 * peripherals with PRCM has a limitation in a certain time
+		 * window of L4 clock cycle. Due to the fact that a wrong
+		 * variant of stall signal was used in circuit of PRCM, the
+		 * intitator-interconnect protocol is broken when the time
+		 * window is hit where the PRCM requires the interconnect to go
+		 * to idle while intitator asks to wakeup.
+		 * Issue #2: DISPC asserts a sub-mstandby signal for a short
+		 * period. In this time interval, IP block requests
+		 * disconnection of Master port, and results in Mstandby and
+		 * wait request to PRCM. In parallel, if mstandby is de-asserted
+		 * by DISPC simultaneously, interconnect requests for a
+		 * reconnect for one cycle alone resulting in a disconnect
+		 * protocol violation and a deadlock of the system.
+		 *
+		 * Workaround:
+		 * L3_1 clock domain must not be programmed in HW_AUTO if
+		 * Static dependency with DSS is enabled and DSS clock domain
+		 * is ON. Same for L3_2.
 		 */
-		clkdm_deny_idle(l3_1_clkdm);
-		clkdm_deny_idle(l3_2_clkdm);
-
-		/* Removes latency constraint */
-		omap_pm_set_max_dev_wakeup_lat(&dispc.pdev->dev, &dispc.pdev->dev, -1);
+		if (cpu_is_omap44xx()) {
+			clkdm_deny_idle(l3_1_clkdm);
+			clkdm_deny_idle(l3_2_clkdm);
+		}
 
 		r = dss_runtime_get();
 		if (r)
@@ -571,7 +587,6 @@ err_dss_get:
 
 void dispc_runtime_put(void)
 {
-	struct powerdomain *dss_powerdomain = pwrdm_lookup("dss_pwrdm");
 	mutex_lock(&dispc.runtime_lock);
 
 	if (--dispc.runtime_count == 0) {
@@ -581,14 +596,6 @@ void dispc_runtime_put(void)
 
 		dispc_save_context();
 
-		/* Sets DSS max latency constraint
-		* (allowing for deeper power state)
-		*/
-		omap_pm_set_max_dev_wakeup_lat(
-						&dispc.pdev->dev,
-						&dispc.pdev->dev,
-						dss_powerdomain->wakeup_lat[PWRDM_FUNC_PWRST_OFF]);
-
 		r = pm_runtime_put_sync(&dispc.pdev->dev);
 		WARN_ON(r);
 
@@ -597,11 +604,14 @@ void dispc_runtime_put(void)
 		dss_runtime_put();
 
 		/*
+		 * OMAP4 ERRATUM xxxx: Mstandby and disconnect protocol issue
+		 * Workaround:
 		 * Restore L3_1 amd L3_2 CD to HW_AUTO, when DSS module idles.
-		 * When DSS is idle, we can allow L3_1 and L3_2 to idle.
 		 */
-		clkdm_allow_idle(l3_1_clkdm);
-		clkdm_allow_idle(l3_2_clkdm);
+		if (cpu_is_omap44xx()) {
+			clkdm_allow_idle(l3_1_clkdm);
+			clkdm_allow_idle(l3_2_clkdm);
+		}
 
 	}
 
@@ -3997,8 +4007,11 @@ static void _omap_dispc_initial_config(void)
 		dispc_write_reg(DISPC_DIVISOR, l);
 	}
 
-	l3_1_clkdm = clkdm_lookup("l3_1_clkdm");
-	l3_2_clkdm = clkdm_lookup("l3_2_clkdm");
+	/* for OMAP4 ERRATUM xxxx: Mstandby and disconnect protocol issue */
+	if (cpu_is_omap44xx()) {
+		l3_1_clkdm = clkdm_lookup("l3_1_clkdm");
+		l3_2_clkdm = clkdm_lookup("l3_2_clkdm");
+	}
 
 	/* FUNCGATED */
 	if (dss_has_feature(FEAT_FUNCGATED))

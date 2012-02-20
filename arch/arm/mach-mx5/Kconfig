@@ -14,6 +14,7 @@ config ARCH_MX53
 config SOC_IMX50
 	bool
 	select CPU_V7
+	select ARM_L1_CACHE_SHIFT_6
 	select MXC_TZIC
 	select ARCH_MXC_IOMUX_V3
 	select ARCH_MXC_AUDMUX_V2
@@ -24,6 +25,7 @@ config SOC_IMX50
 config	SOC_IMX51
 	bool
 	select CPU_V7
+	select ARM_L1_CACHE_SHIFT_6
 	select MXC_TZIC
 	select ARCH_MXC_IOMUX_V3
 	select ARCH_MXC_AUDMUX_V2
@@ -33,6 +35,7 @@ config	SOC_IMX51
 config	SOC_IMX53
 	bool
 	select CPU_V7
+	select ARM_L1_CACHE_SHIFT_6
 	select MXC_TZIC
 	select ARCH_MXC_IOMUX_V3
 	select ARCH_MX5

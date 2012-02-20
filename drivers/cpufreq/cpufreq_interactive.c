@@ -13,8 +13,6 @@
  * GNU General Public License for more details.
  *
  * Author: Mike Chan (mike@android.com)
- * Modified for early suspend support and hotplugging by imoseyon (imoseyon@gmail.com)
- *   interactive V2
  *
  */
 
@@ -29,7 +27,9 @@
 #include <linux/workqueue.h>
 #include <linux/kthread.h>
 #include <linux/mutex.h>
-#include <linux/earlysuspend.h>
+
+#define CREATE_TRACE_POINTS
+#include <trace/events/cpufreq_interactive.h>
 
 #include <asm/cputime.h>
 
@@ -62,15 +62,11 @@ static cpumask_t down_cpumask;
 static spinlock_t down_cpumask_lock;
 static struct mutex set_speed_lock;
 
-// used for suspend code
-static unsigned int enabled = 0;
-static unsigned int suspendfreq = 500000;
-
 /* Hi speed to bump to from lo speed when load burst (default max) */
 static u64 hispeed_freq;
 
 /* Go to hi speed when CPU load at or above this value. */
-#define DEFAULT_GO_HISPEED_LOAD 96
+#define DEFAULT_GO_HISPEED_LOAD 95
 static unsigned long go_hispeed_load;
 
 /*
@@ -190,7 +186,11 @@ static void cpufreq_interactive_timer(unsigned long data)
 	new_freq = pcpu->freq_table[index].frequency;
 
 	if (pcpu->target_freq == new_freq)
+	{
+		trace_cpufreq_interactive_already(data, cpu_load,
+						  pcpu->target_freq, new_freq);
 		goto rearm_if_notmax;
+	}
 
 	/*
 	 * Do not scale down unless we have been at this frequency for the
@@ -198,9 +198,15 @@ static void cpufreq_interactive_timer(unsigned long data)
 	 */
 	if (new_freq < pcpu->target_freq) {
 		if (cputime64_sub(pcpu->timer_run_time, pcpu->freq_change_time)
-		    < min_sample_time)
+		    < min_sample_time) {
+			trace_cpufreq_interactive_notyet(data, cpu_load,
+					 pcpu->target_freq, new_freq);
 			goto rearm;
+		}
 	}
+
+	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
+					 new_freq);
 
 	if (new_freq < pcpu->target_freq) {
 		pcpu->target_freq = new_freq;
@@ -389,6 +395,8 @@ static int cpufreq_interactive_up_task(void *data)
 			pcpu->freq_change_time_in_idle =
 				get_cpu_idle_time_us(cpu,
 						     &pcpu->freq_change_time);
+			trace_cpufreq_interactive_up(cpu, pcpu->target_freq,
+						     pcpu->policy->cur);
 		}
 	}
 
@@ -435,6 +443,8 @@ static void cpufreq_interactive_freq_down(struct work_struct *work)
 		pcpu->freq_change_time_in_idle =
 			get_cpu_idle_time_us(cpu,
 					     &pcpu->freq_change_time);
+		trace_cpufreq_interactive_down(cpu, pcpu->target_freq,
+					       pcpu->policy->cur);
 	}
 }
 
@@ -541,54 +551,6 @@ static struct attribute_group interactive_attr_group = {
 	.name = "interactive",
 };
 
-static void interactive_suspend(int suspend)
-{
-        unsigned int cpu;
-        cpumask_t tmp_mask;
-        struct cpufreq_interactive_cpuinfo *pcpu;
-
-        if (!enabled) return;
-	  if (!suspend) { 
-		mutex_lock(&set_speed_lock);
-		if (num_online_cpus() < 2) cpu_up(1);
-		for_each_cpu(cpu, &tmp_mask) {
-		  pcpu = &per_cpu(cpuinfo, cpu);
-		  smp_rmb();
-		  if (!pcpu->governor_enabled)
-		    continue;
-		  __cpufreq_driver_target(pcpu->policy, hispeed_freq, CPUFREQ_RELATION_L);
-		}
-		mutex_unlock(&set_speed_lock);
-                pr_info("[imoseyon] interactive wake cpu1 up\n");
-	  } else {
-		mutex_lock(&set_speed_lock);
-		for_each_cpu(cpu, &tmp_mask) {
-		  pcpu = &per_cpu(cpuinfo, cpu);
-		  smp_rmb();
-		  if (!pcpu->governor_enabled)
-		    continue;
-		  __cpufreq_driver_target(pcpu->policy, suspendfreq, CPUFREQ_RELATION_H);
-		}
-		if (num_online_cpus() > 1) cpu_down(1);
-		mutex_unlock(&set_speed_lock);
-                pr_info("[imoseyon] interactive suspended cpu1 down\n");
-	  }
-}
-
-static void interactive_early_suspend(struct early_suspend *handler) {
-     interactive_suspend(1);
-}
-
-static void interactive_late_resume(struct early_suspend *handler) {
-     interactive_suspend(0);
-}
-
-static struct early_suspend interactive_power_suspend = {
-        .suspend = interactive_early_suspend,
-        .resume = interactive_late_resume,
-        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
-};
-
 static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		unsigned int event)
 {
@@ -632,9 +594,6 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		if (rc)
 			return rc;
 
-		enabled = 1;
-                register_early_suspend(&interactive_power_suspend);
-                pr_info("[imoseyon] interactive start\n");
 		break;
 
 	case CPUFREQ_GOV_STOP:
@@ -660,9 +619,6 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		sysfs_remove_group(cpufreq_global_kobject,
 				&interactive_attr_group);
 
-		enabled = 0;
-                unregister_early_suspend(&interactive_power_suspend);
-                pr_info("[imoseyon] interactive inactive\n");
 		break;
 
 	case CPUFREQ_GOV_LIMITS:

@@ -21,7 +21,6 @@
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/irq.h>
-#include <linux/regulator/machine.h>
 
 #include <asm/hardware/gic.h>
 #include <asm/mach-types.h>
@@ -108,9 +107,6 @@ static struct clockdomain *emif_clkdm, *mpuss_clkdm;
  */
 #define OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_iXXX	BIT(4)
 
-#define OMAP4_PM_ERRATUM_LPDDR_CLK_IO_iXXX				BIT(5)
-#define LPDDR_WD_PULL_DOWN								0x02
-
 u8 pm44xx_errata;
 #define is_pm44xx_erratum(erratum) (pm44xx_errata & OMAP4_PM_ERRATUM_##erratum)
 
@@ -125,28 +121,6 @@ void check_cawake_wakeup_event(void)
 		pr_info("[HSI] PORT 1 CAWAKE WAKEUP EVENT\n");
 		cawake_event_flag = 1;
 	}
-}
-
-void syscontrol_lpddr_clk_io_errata(bool enable)
-{
-	u32 v = 0;
-
-	if (!is_pm44xx_erratum(LPDDR_CLK_IO_iXXX))
-		return;
-
-	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_2);
-	if (enable)
-		v &= ~OMAP4_LPDDR2IO1_GR10_WD_MASK;
-	else
-		v |= LPDDR_WD_PULL_DOWN << OMAP4_LPDDR2IO1_GR10_WD_SHIFT;
-	omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_2);
-
-	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_2);
-	if (enable)
-		v &= ~OMAP4_LPDDR2IO2_GR10_WD_MASK;
-	else
-		v |= LPDDR_WD_PULL_DOWN << OMAP4_LPDDR2IO1_GR10_WD_SHIFT;
-	omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_2);
 }
 
 #define MAX_IOPAD_LATCH_TIME 1000
@@ -251,6 +225,7 @@ void omap4_enter_sleep(unsigned int cpu, unsigned int power_state, bool suspend)
 		if (omap_sr_disable_reset_volt(mpu_voltdm))
 			goto abort_device_off;
 
+		omap_sr_disable_reset_volt(mpu_voltdm);
 		omap_vc_set_auto_trans(mpu_voltdm,
 			OMAP_VC_CHANNEL_AUTO_TRANSITION_RETENTION);
 	}
@@ -298,13 +273,7 @@ void omap4_enter_sleep(unsigned int cpu, unsigned int power_state, bool suspend)
 			OMAP4430_PRM_DEVICE_INST, OMAP4_PRM_IO_PMCTRL_OFFSET);
 	}
 
-	if (suspend)
-		syscontrol_lpddr_clk_io_errata(false);
-
 	omap4_enter_lowpower(cpu, power_state);
-
-	if (suspend)
-		syscontrol_lpddr_clk_io_errata(true);
 
 	if (omap4_device_prev_state_off()) {
 		/* Reconfigure the trim settings as well */
@@ -775,7 +744,7 @@ static int omap4_pm_suspend(void)
 	if (ret)
 		pr_err("Could not enter target state in pm_suspend\n");
 	else
-		pr_info("Successfully put all powerdomains to target state\n");
+		pr_err("Successfully put all powerdomains to target state\n");
 
 	return 0;
 }
@@ -798,21 +767,13 @@ static int omap4_pm_enter(suspend_state_t suspend_state)
 
 static int omap4_pm_begin(suspend_state_t state)
 {
-	int ret = 0;
 	disable_hlt();
-	ret = regulator_suspend_prepare(state);
-	if (ret)
-		pr_err("%s: Regulator suspend prepare failed (%d)!\n", __func__, ret);
 	return 0;
 }
 
 static void omap4_pm_end(void)
 {
-	int ret = 0;
 	enable_hlt();
-	ret = regulator_suspend_finish();
-	if (ret)
-		pr_err("%s: resume regulators from suspend failed (%d)!\n", __func__, ret); 
 	return;
 }
 
@@ -883,7 +844,6 @@ static int __init pwrdms_setup(struct powerdomain *pwrdm, void *unused)
 		return -ENOMEM;
 
 	pwrst->pwrdm = pwrdm;
-
 	if ((!strcmp(pwrdm->name, "mpu_pwrdm")) ||
 			(!strcmp(pwrdm->name, "core_pwrdm")) ||
 			(!strcmp(pwrdm->name, "cpu0_pwrdm")) ||
@@ -891,7 +851,6 @@ static int __init pwrdms_setup(struct powerdomain *pwrdm, void *unused)
 		pwrst->next_state = PWRDM_POWER_ON;
 	else
 		pwrst->next_state = PWRDM_POWER_RET;
-
 	list_add(&pwrst->node, &pwrst_list);
 
 	return omap_set_pwrdm_state(pwrst->pwrdm, pwrst->next_state);
@@ -947,7 +906,16 @@ static void __init syscontrol_setup_regs(void)
 	v |= OMAP4_LPDDR21_VREF_AUTO_EN_CA_MASK | OMAP4_LPDDR21_VREF_AUTO_EN_DQ_MASK;
         omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_3);
 
-	syscontrol_lpddr_clk_io_errata(true);
+	/*
+	 * Workaround for CK differential IO PADn, PADp values due to bug in
+	 * EMIF CMD phy.
+	 */
+	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_2);
+	v &= ~OMAP4_LPDDR2IO1_GR10_WD_MASK;
+	omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_2);
+	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_2);
+	v &= ~OMAP4_LPDDR2IO2_GR10_WD_MASK;
+	omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_2);
 }
 
 static void __init prcm_setup_regs(void)
@@ -1268,8 +1236,7 @@ static void __init omap4_pm_setup_errata(void)
 	 */
 	if (cpu_is_omap44xx())
 		pm44xx_errata |= OMAP4_PM_ERRATUM_IVA_AUTO_RET_iXXX |
-				OMAP4_PM_ERRATUM_HSI_SWAKEUP_iXXX |
-				OMAP4_PM_ERRATUM_LPDDR_CLK_IO_iXXX;
+				 OMAP4_PM_ERRATUM_HSI_SWAKEUP_iXXX;
 	/* Dynamic Dependency errata for all silicon !=443x */
 	if (cpu_is_omap443x())
 		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_i688;
