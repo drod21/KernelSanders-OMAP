@@ -367,7 +367,7 @@ int hsi_write(struct hsi_device *dev, u32 *addr, unsigned int size)
 	}
 
 	ch = dev->ch;
-	hs_ctrl = ch->hsi_port->hsi_controller;
+	hsi_ctrl = ch->hsi_port->hsi_controller;
 
 	dev_dbg(dev->device.parent, "%s ch %d, @%x, size %d u32\n", __func__,
 		dev->n_ch, (u32) addr, size);
