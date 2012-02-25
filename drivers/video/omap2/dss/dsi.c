@@ -416,6 +416,15 @@ void dsi_bus_unlock(struct omap_dss_device *dssdev)
 }
 EXPORT_SYMBOL(dsi_bus_unlock);
 
+bool dsi_bus_was_unlocked(struct omap_dss_device *dssdev)
+{
+	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+
+	return dsi->bus_lock.count == 1;
+}
+EXPORT_SYMBOL(dsi_bus_was_unlocked);
+
 static bool dsi_bus_is_locked(struct platform_device *dsidev)
 {
 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
@@ -4466,6 +4475,21 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
 	dsi_pll_uninit(dsidev, disconnect_lanes);
 }
 
+static int _dsi_wait_reset(struct platform_device *dsidev)
+ {
+         int t = 0;
+ 
+         while (REG_GET(dsidev, DSI_SYSSTATUS, 0, 0) == 0) {
+                 if (++t > 5) {
+                         DSSERR("soft reset failed\n");
+                         return -ENODEV;
+                 }
+                 udelay(1);
+         }
+ 
+         return 0;
+ }
+
 int omapdss_dsi_display_enable(struct omap_dss_device *dssdev)
 {
 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
@@ -4490,6 +4514,12 @@ int omapdss_dsi_display_enable(struct omap_dss_device *dssdev)
 
 	if(!dssdev->skip_init)
 		dsi_enable_pll_clock(dsidev, 1);
+
+	REG_FLD_MOD(dsidev, DSI_SYSCONFIG, 1, 1, 1);
+	_dsi_wait_reset(dsidev);
+
+	/* ENWAKEUP */
+	REG_FLD_MOD(dsidev, DSI_SYSCONFIG, 1, 2, 2);
 
 	_dsi_initialize_irq(dsidev);
 

@@ -38,8 +38,6 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
 
-static int __make_request(struct request_queue *q, struct bio *bio);
-
 /*
  * For the allocated request tables
  */
@@ -533,7 +531,7 @@ blk_init_allocated_queue(struct request_queue *q, request_fn_proc *rfn,
 	/*
 	 * This also sets hw/phys segments, boundary and size
 	 */
-	blk_queue_make_request(q, __make_request);
+	blk_queue_make_request(q, blk_queue_bio);
 
 	q->sg_reserved_size = INT_MAX;
 
@@ -936,54 +934,6 @@ static void add_acct_request(struct request_queue *q, struct request *rq,
 	__elv_add_request(q, rq, where);
 }
 
-/**
- * blk_insert_request - insert a special request into a request queue
- * @q:		request queue where request should be inserted
- * @rq:		request to be inserted
- * @at_head:	insert request at head or tail of queue
- * @data:	private data
- *
- * Description:
- *    Many block devices need to execute commands asynchronously, so they don't
- *    block the whole kernel from preemption during request execution.  This is
- *    accomplished normally by inserting aritficial requests tagged as
- *    REQ_TYPE_SPECIAL in to the corresponding request queue, and letting them
- *    be scheduled for actual execution by the request queue.
- *
- *    We have the option of inserting the head or the tail of the queue.
- *    Typically we use the tail for new ioctls and so forth.  We use the head
- *    of the queue for things like a QUEUE_FULL message from a device, or a
- *    host that is unable to accept a particular command.
- */
-void blk_insert_request(struct request_queue *q, struct request *rq,
-			int at_head, void *data)
-{
-	int where = at_head ? ELEVATOR_INSERT_FRONT : ELEVATOR_INSERT_BACK;
-	unsigned long flags;
-
-	/*
-	 * tell I/O scheduler that this isn't a regular read/write (ie it
-	 * must not attempt merges on this) and that it acts as a soft
-	 * barrier
-	 */
-	rq->cmd_type = REQ_TYPE_SPECIAL;
-
-	rq->special = data;
-
-	spin_lock_irqsave(q->queue_lock, flags);
-
-	/*
-	 * If command is tagged, release the tag
-	 */
-	if (blk_rq_tagged(rq))
-		blk_queue_end_tag(q, rq);
-
-	add_acct_request(q, rq, where);
-	__blk_run_queue(q);
-	spin_unlock_irqrestore(q->queue_lock, flags);
-}
-EXPORT_SYMBOL(blk_insert_request);
-
 static void part_round_stats_single(int cpu, struct hd_struct *part,
 				    unsigned long now)
 {
@@ -1158,7 +1108,7 @@ static bool bio_attempt_front_merge(struct request_queue *q,
  * true if merge was successful, otherwise false.
  */
 static bool attempt_plug_merge(struct task_struct *tsk, struct request_queue *q,
-			       struct bio *bio)
+			       struct bio *bio, unsigned int *request_count)
 {
 	struct blk_plug *plug;
 	struct request *rq;
@@ -1167,9 +1117,12 @@ static bool attempt_plug_merge(struct task_struct *tsk, struct request_queue *q,
 	plug = tsk->plug;
 	if (!plug)
 		goto out;
+	*request_count = 0;
 
 	list_for_each_entry_reverse(rq, &plug->list, queuelist) {
 		int el_ret;
+
+		(*request_count)++;
 
 		if (rq->q != q)
 			continue;
@@ -1204,12 +1157,13 @@ void init_request_from_bio(struct request *req, struct bio *bio)
 	blk_rq_bio_prep(req->q, req, bio);
 }
 
-static int __make_request(struct request_queue *q, struct bio *bio)
+int blk_queue_bio(struct request_queue *q, struct bio *bio)
 {
 	const bool sync = !!(bio->bi_rw & REQ_SYNC);
 	struct blk_plug *plug;
 	int el_ret, rw_flags, where = ELEVATOR_INSERT_SORT;
 	struct request *req;
+	unsigned int request_count = 0;
 
 	/*
 	 * low level driver can indicate that it wants pages above a
@@ -1228,7 +1182,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
 	 * Check if we can merge with the plugged list before grabbing
 	 * any locks.
 	 */
-	if (attempt_plug_merge(current, q, bio))
+	if (attempt_plug_merge(current, q, bio, &request_count))
 		goto out;
 
 	spin_lock_irq(q->queue_lock);
@@ -1288,15 +1242,22 @@ get_rq:
 		 */
 		if (list_empty(&plug->list))
 			trace_block_plug(q);
-		else if (!plug->should_sort) {
-			struct request *__rq;
+		else {
+			if (!plug->should_sort) {
+				struct request *__rq;
 
-			__rq = list_entry_rq(plug->list.prev);
-			if (__rq->q != q)
-				plug->should_sort = 1;
+				__rq = list_entry_rq(plug->list.prev);
+				if (__rq->q != q)
+					plug->should_sort = 1;
+			}
+			if (request_count >= BLK_MAX_REQUEST_COUNT)
+				blk_flush_plug_list(plug, false);
 		}
 		list_add_tail(&req->queuelist, &plug->list);
+		plug->count++;
 		drive_stat_acct(req, 1);
+		if (plug->count >= BLK_MAX_REQUEST_COUNT)
+			blk_flush_plug_list(plug, false);
 	} else {
 		spin_lock_irq(q->queue_lock);
 		add_acct_request(q, req, where);
@@ -1307,6 +1268,7 @@ out_unlock:
 out:
 	return 0;
 }
+EXPORT_SYMBOL_GPL(blk_queue_bio);	/* for device mapper only */
 
 /*
  * If bio->bi_dev is a partition, remap the location
@@ -2620,6 +2582,7 @@ void blk_start_plug(struct blk_plug *plug)
 	INIT_LIST_HEAD(&plug->list);
 	INIT_LIST_HEAD(&plug->cb_list);
 	plug->should_sort = 0;
+	plug->count = 0;
 
 	/*
 	 * If this is a nested plug, don't actually assign it. It will be
@@ -2703,6 +2666,7 @@ void blk_flush_plug_list(struct blk_plug *plug, bool from_schedule)
 		return;
 
 	list_splice_init(&plug->list, &list);
+	plug->count = 0;
 
 	if (plug->should_sort) {
 		list_sort(NULL, &list, plug_rq_cmp);
