@@ -153,10 +153,10 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 	OPP_INITIALIZER("aess", "abe_clk", "iva", true, 196608000, OMAP4430_VDD_IVA_OPP100_UV),
 };
 
-#define OMAP4460_VDD_MPU_OPP50_UV		1025000
-#define OMAP4460_VDD_MPU_OPP100_UV		1203000
-#define OMAP4460_VDD_MPU_OPPTURBO_UV		1317000
-#define OMAP4460_VDD_MPU_OPPNITRO_UV		1380000
+#define OMAP4460_VDD_MPU_OPP50_UV		925000
+#define OMAP4460_VDD_MPU_OPP100_UV		1075000
+#define OMAP4460_VDD_MPU_OPPTURBO_UV		1150000
+#define OMAP4460_VDD_MPU_OPPNITRO_UV		1225000
 #define OMAP4460_VDD_MPU_OPPNITROSB_UV		1380000
 
 struct omap_volt_data omap446x_vdd_mpu_volt_data[] = {
@@ -324,10 +324,10 @@ int __init omap4_opp_init(void)
 			ARRAY_SIZE(omap446x_opp_def_list));
 
 	if (!r) {
-		if (omap4_has_mpu_1_2ghz())
+	//	if (omap4_has_mpu_1_2ghz())
 			omap4_mpu_opp_enable(1200000000);
 		/* The tuna PCB doesn't support 1.5GHz, so lets drop it to 1.35GHz */
-		if (omap4_has_mpu_1_5ghz())
+	//	if (omap4_has_mpu_1_5ghz())
 			omap4_mpu_opp_enable(1350000000);
 	}
 
