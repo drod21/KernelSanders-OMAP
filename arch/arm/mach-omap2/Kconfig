@@ -407,4 +407,16 @@ config FORCE_FAST_CHARGE
 	  A simple sysfs interface to force adapters that
 	  are detected as USB to charge as AC.
 
+config CRISPY
+	bool "Enable overclock options"
+	default n
+	help
+	  Enables overclock up to 1.35 GHz, overclocks GPU.
+
+config ORIGINAL_RECIPE
+	bool "Sets default frequencies"
+	default y
+	help
+	  Stock frequency defaults, enables 1.0 GHz slot, no GPU overclock.
+
 endif
