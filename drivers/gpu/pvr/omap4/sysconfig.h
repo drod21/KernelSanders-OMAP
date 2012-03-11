@@ -29,8 +29,12 @@
 
 #define VS_PRODUCT_NAME	"OMAP4"
 
-#if defined(SGX540) && (SGX_CORE_REV == 120)
+#if defined(SGX540) && (SGX_CORE_REV == 120) 
+#ifdef CONFIG_CRISPY
+#define SYS_SGX_CLOCK_SPEED		384000000
+#else
 #define SYS_SGX_CLOCK_SPEED		307200000
+#endif
 #else
 #define SYS_SGX_CLOCK_SPEED		304742400
 #endif
