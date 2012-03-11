@@ -1,12 +1,12 @@
 #!/bin/sh
 T=$PWD
-PRODUCT=KernelSanders
+PRODUCT=KernelSanders-Original-Recipe
 PRODUCT_CONFIG_FILE=kernelsanders-tuna_defconfig
 TOOLCHAIN=tools/toolchain/android-toolchain-eabi/bin/arm-linux-androideabi-
 # RAMDISK_FILES=ramdisk
 # MKRAMDISK=$T/tools/update-zip-tools/mkbootfs
 # MKBOOTIMG=$T/tools/update-zip-tools/mkbootimg
-VERSION=0.2.5
+VERSION=0.2.8
 #DATE=$(date +%Y-%m-%d_%H":"%M)
 
 # Setup kangbang-defconfigs and build zImage
