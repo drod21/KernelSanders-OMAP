@@ -1,8 +1,8 @@
 #!/bin/sh
 # This script will make kernels, and then package them for release.
 
-PRODUCT1=KernelSanders
-# PRODUCT2=<insert product name>
+PRODUCT1=KernelSanders-Original-Recipe
+PRODUCT2=KernelSanders-Crispy
 # PRODUCT3=<insert product name>
 
 T=$PWD
@@ -28,15 +28,15 @@ fi
 
 # Product 2 setup
 
-#echo "Now building $PRODUCT2 and packaging"
-#./build-scripts/$PRODUCT2.sh
+echo "Now building $PRODUCT2 and packaging"
+./build-scripts/$PRODUCT2.sh
 
-#if [ -f $T/out/$PRODUCT2/kernel/zImage ];
- #   then
-  #      echo "$PRODUCT2 found"
-   # else
-    #    echo "$PRODUCT2 did not compile successfully, please fix your shit"
-#fi
+if [ -f $T/out/$PRODUCT2/kernel/zImage ];
+    then
+        echo "$PRODUCT2 found"
+    else
+        echo "$PRODUCT2 did not compile successfully, please fix your shit"
+fi
 
 # Product 3 setup
 
@@ -51,4 +51,4 @@ fi
 #         exit 0
 # fi
 
-echo "All kernels are done..."
+echo "All kernels are done... copying to dropbox"
