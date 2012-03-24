@@ -64,6 +64,7 @@ static struct mutex set_speed_lock;
 
 // used for suspend code
 static unsigned int enabled = 0;
+static unsigned int registration = 0;
 static unsigned int suspendfreq = 540000;
 
 /* Hi speed to bump to from lo speed when load burst (default max) */
@@ -576,7 +577,7 @@ static void interactive_suspend(int suspend)
 }
 
 static void interactive_early_suspend(struct early_suspend *handler) {
-     interactive_suspend(1);
+     if (!registration) interactive_suspend(1);
 }
 
 static void interactive_late_resume(struct early_suspend *handler) {
@@ -633,8 +634,10 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 			return rc;
 
 		enabled = 1;
-                register_early_suspend(&interactive_power_suspend);
-                pr_info("[imoseyon] interactive start\n");
+		registration = 1;
+                	register_early_suspend(&interactive_power_suspend);
+		registration = 0;
+                	pr_info("[imoseyon] interactive start\n");
 		break;
 
 	case CPUFREQ_GOV_STOP:
