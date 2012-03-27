@@ -191,6 +191,7 @@ int omap4_prcm_freq_update(void)
 #define MAX_DPLL_WAIT_TRIES	1000000
 
 #define OMAP_1_5GHz	1500000000
+#define OMAP_1_35GHz    1350000000
 #define OMAP_1_2GHz	1200000000
 #define OMAP_1GHz	1000000000
 #define OMAP_920MHz	920000000
@@ -310,7 +311,9 @@ int omap4460_mpu_dpll_set_rate(struct clk *clk, unsigned long rate)
 	 * And needs to be kept disabled for < 1 Ghz.
 	 */
 	dpll_rate = omap2_get_dpll_rate(clk->parent);
-	if (rate <= OMAP_1_5GHz) {
+	/* anything @ or below 1.35 GHz, disable DCC to save battery */
+        if (rate <= OMAP_1_35GHz) {
+
 		/* If DCC is enabled, disable it */
 		v = __raw_readl(dd->mult_div1_reg);
 		if (v & OMAP4460_DCC_EN_MASK) {
@@ -328,16 +331,22 @@ int omap4460_mpu_dpll_set_rate(struct clk *clk, unsigned long rate)
 		 * than 1 Ghz, lock the DPLL at half the rate so the
 		 * CLKOUTX2_M3 then matches the requested rate.
 		 */
-		if (rate != dpll_rate * 2)
+		if (rate != dpll_rate * 2) {
 			clk->parent->set_rate(clk->parent, rate / 2);
+		//pr_err("bad DCC rate: %lu\n", dpll_rate);	
+    }
 
 		v = __raw_readl(dd->mult_div1_reg);
+		
+		/* reset the DCC */
 		v &= ~OMAP4460_DCC_COUNT_MAX_MASK;
 		v |= (5 << OMAP4460_DCC_COUNT_MAX_SHIFT);
 		__raw_writel(v, dd->mult_div1_reg);
 
+		/* enable the DCC */
 		v |= OMAP4460_DCC_EN_MASK;
 		__raw_writel(v, dd->mult_div1_reg);
+		//pr_info("High OC Frequencies Activated!\n");
 	}
 
 	if (rate < clk->rate)
