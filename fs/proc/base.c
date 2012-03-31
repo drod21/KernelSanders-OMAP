@@ -796,12 +796,8 @@ static int mem_open(struct inode* inode, struct file* file)
 	return 0;
 }
 
-#define mem_write NULL
-
-#ifndef mem_write
-/* This is a security hazard */
-static ssize_t mem_write(struct file * file, const char __user *buf,
-			 size_t count, loff_t *ppos)
+static ssize_t mem_rw(struct file *file, char __user *buf,
+			size_t count, loff_t *ppos, int write)
 {
 	struct mm_struct *mm = file->private_data;
 	unsigned long addr = *ppos;
@@ -851,7 +847,6 @@ free:
 	free_page((unsigned long) page);
 	return copied;
 }
-#endif
 
 static ssize_t mem_read(struct file *file, char __user *buf,
 			size_t count, loff_t *ppos)
