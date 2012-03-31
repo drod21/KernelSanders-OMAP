@@ -43,6 +43,10 @@
 #include "dvfs.h"
 #include "smartreflex.h"
 
+#define MIN_OMAP4460_VDD_CORE_OPP50_UV     875000
+#define MIN_OMAP4460_VDD_CORE_OPP100_UV    1000000
+#define MIN_OMAP4460_VDD_CORE_OPP100_OV_UV  1100000
+
 #ifdef CONFIG_SMP
 struct lpj_info {
 	unsigned long	ref;
