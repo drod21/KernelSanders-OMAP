@@ -1,5 +1,5 @@
 /* Generated automatically by the program 'build/genpreds'
-   from the machine description file '/mnt/jenkins/workspace/linaro-android_toolchain-4.6-2012.02/build/objdir/../build/../gcc/gcc-linaro-4.6-2012.02/gcc/config/arm/arm.md'.  */
+   from the machine description file '/mnt/jenkins/workspace/linaro-android_toolchain-4.7-2012.03/build/objdir/temp-src/gcc-linaro-4.6-2012.03/gcc/config/arm/arm.md'.  */
 
 #ifndef GCC_TM_PREDS_H
 #define GCC_TM_PREDS_H
@@ -55,6 +55,7 @@ extern int shiftable_operator (rtx, enum machine_mode);
 extern int logical_binary_operator (rtx, enum machine_mode);
 extern int commutative_binary_operator (rtx, enum machine_mode);
 extern int shift_operator (rtx, enum machine_mode);
+extern int sat_shift_operator (rtx, enum machine_mode);
 extern int mult_operator (rtx, enum machine_mode);
 extern int thumb_16bit_operator (rtx, enum machine_mode);
 extern int equality_operator (rtx, enum machine_mode);
@@ -97,6 +98,7 @@ extern int cmpdi_operand (rtx, enum machine_mode);
 extern int arm_sync_memory_operand (rtx, enum machine_mode);
 extern int vect_par_constant_high (rtx, enum machine_mode);
 extern int vect_par_constant_low (rtx, enum machine_mode);
+extern int const_double_vcvt_power_of_two_reciprocal (rtx, enum machine_mode);
 extern int neon_struct_operand (rtx, enum machine_mode);
 extern int add_operator (rtx, enum machine_mode);
 #endif /* HAVE_MACHINE_MODES */
@@ -150,6 +152,7 @@ enum constraint_num
   CONSTRAINT_DL,
   CONSTRAINT_Dv,
   CONSTRAINT_Dy,
+  CONSTRAINT_Dt,
   CONSTRAINT_Ut,
   CONSTRAINT_Uv,
   CONSTRAINT_Uy,

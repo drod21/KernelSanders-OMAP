@@ -104,6 +104,7 @@ extern int tls_mentioned_p (rtx);
 extern int symbol_mentioned_p (rtx);
 extern int label_mentioned_p (rtx);
 extern RTX_CODE minmax_code (rtx);
+extern bool arm_sat_operator_match (rtx, rtx, int *, bool *);
 extern int adjacent_mem_locations (rtx, rtx);
 extern bool gen_ldm_seq (rtx *, int, bool);
 extern bool gen_stm_seq (rtx *, int);
@@ -238,6 +239,7 @@ struct tune_params
 };
 
 extern const struct tune_params *current_tune;
+extern int vfp3_const_double_for_fract_bits (rtx);
 #endif /* RTX_CODE */
 
 #endif /* ! GCC_ARM_PROTOS_H */

@@ -1,8 +1,8 @@
 #include "configargs.h"
 
 static char basever[] = "4.6.3";
-static char datestamp[] = "20120201";
-static char devphase[] = "prerelease";
+static char datestamp[] = "20120301";
+static char devphase[] = "";
 static char revision[] = "";
 
 /* FIXME plugins: We should make the version information more precise.

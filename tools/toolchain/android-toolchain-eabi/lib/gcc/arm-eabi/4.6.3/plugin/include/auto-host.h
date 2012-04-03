@@ -1255,7 +1255,7 @@
 
 /* Define if your linker supports plugin. */
 #ifndef USED_FOR_TARGET
-/* #undef HAVE_LTO_PLUGIN */
+#define HAVE_LTO_PLUGIN 1
 #endif
 
 

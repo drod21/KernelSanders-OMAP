@@ -1270,6 +1270,7 @@
 					TARGET_HAVE_MEMORY_BARRIER)
 #define HAVE_arm_sync_old_nandhi (TARGET_HAVE_LDREXBH && \
 					TARGET_HAVE_MEMORY_BARRIER)
+#define HAVE_arm_sync_lock_releasedi (TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_MEMORY_BARRIER)
 #define HAVE_adddi3 1
 #define HAVE_addsi3 1
 #define HAVE_incscc (TARGET_32BIT)
@@ -2337,6 +2338,7 @@
 #define HAVE_sync_old_nanddi (TARGET_HAVE_LDREXD && \
 					ARM_DOUBLEWORD_ALIGN && \
 					TARGET_HAVE_MEMORY_BARRIER)
+#define HAVE_sync_lock_releasedi (TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_MEMORY_BARRIER)
 extern rtx        gen_addsi3_compare0                   (rtx, rtx, rtx);
 extern rtx        gen_thumb1_subsi3_insn                (rtx, rtx, rtx);
 extern rtx        gen_mulhisi3                          (rtx, rtx, rtx);
@@ -3557,6 +3559,7 @@ extern rtx        gen_arm_sync_old_nandsi               (rtx, rtx, rtx);
 extern rtx        gen_arm_sync_old_nanddi               (rtx, rtx, rtx);
 extern rtx        gen_arm_sync_old_nandqi               (rtx, rtx, rtx);
 extern rtx        gen_arm_sync_old_nandhi               (rtx, rtx, rtx);
+extern rtx        gen_arm_sync_lock_releasedi           (rtx, rtx, rtx);
 extern rtx        gen_adddi3                            (rtx, rtx, rtx);
 extern rtx        gen_addsi3                            (rtx, rtx, rtx);
 extern rtx        gen_incscc                            (rtx, rtx, rtx, rtx);
@@ -4423,5 +4426,6 @@ extern rtx        gen_sync_old_nandqi                   (rtx, rtx, rtx);
 extern rtx        gen_sync_old_nandhi                   (rtx, rtx, rtx);
 extern rtx        gen_sync_old_nandsi                   (rtx, rtx, rtx);
 extern rtx        gen_sync_old_nanddi                   (rtx, rtx, rtx);
+extern rtx        gen_sync_lock_releasedi               (rtx, rtx);
 
 #endif /* GCC_INSN_FLAGS_H */

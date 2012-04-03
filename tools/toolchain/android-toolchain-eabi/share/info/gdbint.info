@@ -1,15 +1,14 @@
 This is gdbint.info, produced by makeinfo version 4.13 from
-/mnt/jenkins/workspace/linaro-android_toolchain-4.6-2012.02/build/objdir/temp-src/gdb-linaro-7.3-2011.10/gdb/doc/gdbint.texinfo.
+/mnt/jenkins/workspace/linaro-android_toolchain-4.7-2012.03/build/objdir/temp-src/gdb-linaro-7.4-2012.02/gdb/doc/gdbint.texinfo.
 
 INFO-DIR-SECTION Software development
 START-INFO-DIR-ENTRY
 * Gdb-Internals: (gdbint).	The GNU debugger's internals.
 END-INFO-DIR-ENTRY
 
-   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1998, 1999, 2000,
-2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011 Free
-Software Foundation, Inc.  Contributed by Cygnus Solutions.  Written by
-John Gilmore.  Second Edition by Stan Shebs.
+   Copyright (C) 1990-1994, 1996, 1998-2006, 2008-2012 Free Software
+Foundation, Inc.  Contributed by Cygnus Solutions.  Written by John
+Gilmore.  Second Edition by Stan Shebs.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -20,10 +19,9 @@ Free Documentation License".
 
    This file documents the internals of the GNU debugger GDB.
 
-   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1998, 1999, 2000,
-2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011 Free
-Software Foundation, Inc.  Contributed by Cygnus Solutions.  Written by
-John Gilmore.  Second Edition by Stan Shebs.
+   Copyright (C) 1990-1994, 1996, 1998-2006, 2008-2012 Free Software
+Foundation, Inc.  Contributed by Cygnus Solutions.  Written by John
+Gilmore.  Second Edition by Stan Shebs.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -3226,7 +3224,7 @@ These functions return information about registers.
      function for fuller control over how the registers are displayed.
 
      The access should be for the specified architecture, GDBARCH, with
-     output to the the file specified by the User Interface Independent
+     output to the file specified by the User Interface Independent
      Output file handle, FILE (*note UI-Independent Output--the
      `ui_out' Functions: UI-Independent Output.).
 
@@ -7460,17 +7458,16 @@ emitted.
  -- Function: void about_to_proceed (void)
      The target is about to be proceeded.
 
- -- Function: void breakpoint_created (int BPNUM)
-     A new breakpoint has been created.  The argument BPNUM is the
-     number of the newly-created breakpoint.
+ -- Function: void breakpoint_created (struct breakpoint *B)
+     A new breakpoint B has been created.
 
- -- Function: void breakpoint_deleted (int BPNUM)
-     A breakpoint has been destroyed.  The argument BPNUM is the number
-     of the newly-destroyed breakpoint.
+ -- Function: void breakpoint_deleted (struct breakpoint *B)
+     A breakpoint has been destroyed.  The argument B is the pointer to
+     the destroyed breakpoint.
 
- -- Function: void breakpoint_modified (int BPNUM)
-     A breakpoint has been modified in some way.  The argument BPNUM is
-     the number of the modified breakpoint.
+ -- Function: void breakpoint_modified (struct breakpoint *B)
+     A breakpoint has been modified in some way.  The argument B is the
+     modified breakpoint.
 
  -- Function: void tracepoint_created (int TPNUM)
      A new tracepoint has been created.  The argument TPNUM is the
@@ -7512,6 +7509,10 @@ emitted.
           bfd_byte *DATA)
      Bytes from DATA to DATA + LEN have been written to the current
      inferior at ADDR.
+
+ -- Function: void before_prompt (const char *CURRENT_PROMPT)
+     Called before a top-level prompt is displayed.  CURRENT_PROMPT is
+     the current top-level prompt.
 
  -- Function: void test_notification (int SOMEARG)
      This observer is used for internal testing.  Do not use.  See
@@ -8056,11 +8057,12 @@ Index
                                                               (line  13)
 * architecture representation:           How an Architecture is Represented.
                                                               (line   6)
-* architecture_changed:                  GDB Observers.       (line 160)
+* architecture_changed:                  GDB Observers.       (line 159)
 * Array Containers:                      Support Libraries.   (line 131)
 * assumptions about targets:             Misc Guidelines.     (line 334)
 * base of a frame:                       Frame Handling Terminology.
                                                               (line  28)
+* before_prompt:                         GDB Observers.       (line 188)
 * BFD library:                           Support Libraries.   (line   9)
 * bfd_arch_info:                         Looking Up an Existing Architecture.
                                                               (line  41)
@@ -8073,8 +8075,8 @@ Index
 * breakpoint address adjusted:           Defining Other Architecture Features.
                                                               (line 145)
 * breakpoint_created:                    GDB Observers.       (line 136)
-* breakpoint_deleted:                    GDB Observers.       (line 140)
-* breakpoint_modified:                   GDB Observers.       (line 144)
+* breakpoint_deleted:                    GDB Observers.       (line 139)
+* breakpoint_modified:                   GDB Observers.       (line 143)
 * breakpoints:                           Algorithms.          (line 151)
 * bug-gdb mailing list:                  Getting Started.     (line  72)
 * build script:                          Debugging GDB.       (line  94)
@@ -8436,11 +8438,11 @@ Index
 * I386_USE_GENERIC_WATCHPOINTS:          Algorithms.          (line 461)
 * in_dynsym_resolve_code:                Defining Other Architecture Features.
                                                               (line 263)
-* inferior_added:                        GDB Observers.       (line 169)
-* inferior_appeared:                     GDB Observers.       (line 173)
+* inferior_added:                        GDB Observers.       (line 168)
+* inferior_appeared:                     GDB Observers.       (line 172)
 * inferior_created:                      GDB Observers.       (line  92)
-* inferior_exit:                         GDB Observers.       (line 176)
-* inferior_removed:                      GDB Observers.       (line 180)
+* inferior_exit:                         GDB Observers.       (line 175)
+* inferior_removed:                      GDB Observers.       (line 179)
 * inner_than:                            Functions and Variable to Analyze Frames.
                                                               (line  30)
 * innermost frame:                       Frame Handling Terminology.
@@ -8474,7 +8476,7 @@ Index
 * making a new release of gdb:           Releasing GDB.       (line   6)
 * memory representation:                 Register and Memory Data.
                                                               (line   6)
-* memory_changed:                        GDB Observers.       (line 185)
+* memory_changed:                        GDB Observers.       (line 184)
 * minimal symbol table:                  Symbol Handling.     (line 111)
 * minsymtabs:                            Symbol Handling.     (line 111)
 * multi-arch data:                       Misc Guidelines.     (line 100)
@@ -8699,16 +8701,16 @@ Index
 * terminal device:                       Host Definition.     (line  97)
 * test suite:                            Testsuite.           (line   6)
 * test suite organization:               Testsuite.           (line 195)
-* test_notification:                     GDB Observers.       (line 189)
+* test_notification:                     GDB Observers.       (line 192)
 * Testsuite Configuration:               Testsuite.           (line 167)
 * THIS frame:                            Frame Handling Terminology.
                                                               (line   9)
 * thread_exit:                           GDB Observers.       (line 117)
-* thread_ptid_changed:                   GDB Observers.       (line 165)
+* thread_ptid_changed:                   GDB Observers.       (line 164)
 * thread_stop_requested:                 GDB Observers.       (line 122)
-* tracepoint_created:                    GDB Observers.       (line 148)
-* tracepoint_deleted:                    GDB Observers.       (line 152)
-* tracepoint_modified:                   GDB Observers.       (line 156)
+* tracepoint_created:                    GDB Observers.       (line 147)
+* tracepoint_deleted:                    GDB Observers.       (line 151)
+* tracepoint_modified:                   GDB Observers.       (line 155)
 * tuple output functions:                User Interface.      (line 131)
 * type codes:                            Symbol Handling.     (line 191)
 * types:                                 Coding Standards.    (line 121)
@@ -8772,84 +8774,84 @@ Index
 
 
 Tag Table:
-Node: Top1661
-Node: Summary2572
-Node: Requirements2722
-Node: Contributors4201
-Node: Overall Structure5794
-Node: Algorithms10817
-Node: User Interface42259
-Ref: UI-Independent Output44114
-Ref: User Interface-Footnote-166104
-Ref: User Interface-Footnote-266153
-Node: libgdb66388
-Node: Values70339
-Node: Stack Frames73183
-Node: Symbol Handling78165
-Node: Language Support94970
-Node: Host Definition99696
-Node: Target Architecture Definition104055
-Node: OS ABI Variant Handling104875
-Node: Initialize New Architecture109720
-Node: How an Architecture is Represented110071
-Node: Looking Up an Existing Architecture112028
-Node: Creating a New Architecture114947
-Node: Registers and Memory116985
-Node: Pointers and Addresses117777
-Ref: Pointers and Addresses-Footnote-1123778
-Node: Address Classes124021
-Node: Register Representation127266
-Node: Raw and Cooked Registers127640
-Node: Register Architecture Functions & Variables128824
-Node: Register Information Functions132433
-Ref: Register Information Functions-Footnote-1138339
-Node: Register and Memory Data138758
-Node: Register Caching141907
-Node: Frame Interpretation143443
-Node: All About Stack Frames143849
-Ref: All About Stack Frames-Footnote-1149141
-Node: Frame Handling Terminology149373
-Node: Prologue Caches151900
-Node: Functions and Variable to Analyze Frames153581
-Ref: frame_align155679
-Node: Functions to Access Frame Data157193
-Node: Analyzing Stacks---Frame Sniffers159484
-Ref: Analyzing Stacks---Frame Sniffers-Footnote-1164134
-Node: Inferior Call Setup164631
-Node: About Dummy Frames164914
-Node: Functions Creating Dummy Frames165540
-Node: Adding support for debugging core files169597
-Node: Defining Other Architecture Features170141
-Ref: gdbarch_breakpoint_from_pc174988
-Ref: gdbarch_stabs_argument_has_addr187382
-Ref: gdbarch_push_dummy_call187629
-Ref: gdbarch_push_dummy_code188189
-Ref: gdbarch_return_value189171
-Ref: gdbarch_dummy_id194937
-Node: Adding a New Target195625
-Node: Target Descriptions198092
-Node: Target Descriptions Implementation199031
-Node: Adding Target Described Register Support200405
-Node: Target Vector Definition203351
-Node: Managing Execution State203883
-Node: Existing Targets205696
-Node: Native Debugging208211
-Node: Support Libraries212039
-Node: Coding Standards223564
-Node: Misc Guidelines231444
-Node: Porting GDB249807
-Node: Versions and Branches251685
-Ref: Tags257641
-Ref: experimental branch tags257972
-Node: Start of New Year Procedure258704
-Node: Releasing GDB260510
-Node: Testsuite278742
-Ref: Testsuite-Footnote-1290607
-Node: Hints290725
-Node: Getting Started291047
-Node: Debugging GDB295212
-Node: GDB Observers300301
-Node: GNU Free Documentation License308609
-Node: Index333776
+Node: Top1511
+Node: Summary2422
+Node: Requirements2572
+Node: Contributors4051
+Node: Overall Structure5644
+Node: Algorithms10667
+Node: User Interface42109
+Ref: UI-Independent Output43964
+Ref: User Interface-Footnote-165954
+Ref: User Interface-Footnote-266003
+Node: libgdb66238
+Node: Values70189
+Node: Stack Frames73033
+Node: Symbol Handling78015
+Node: Language Support94820
+Node: Host Definition99546
+Node: Target Architecture Definition103905
+Node: OS ABI Variant Handling104725
+Node: Initialize New Architecture109570
+Node: How an Architecture is Represented109921
+Node: Looking Up an Existing Architecture111878
+Node: Creating a New Architecture114797
+Node: Registers and Memory116835
+Node: Pointers and Addresses117627
+Ref: Pointers and Addresses-Footnote-1123628
+Node: Address Classes123871
+Node: Register Representation127116
+Node: Raw and Cooked Registers127490
+Node: Register Architecture Functions & Variables128674
+Node: Register Information Functions132283
+Ref: Register Information Functions-Footnote-1138185
+Node: Register and Memory Data138604
+Node: Register Caching141753
+Node: Frame Interpretation143289
+Node: All About Stack Frames143695
+Ref: All About Stack Frames-Footnote-1148987
+Node: Frame Handling Terminology149219
+Node: Prologue Caches151746
+Node: Functions and Variable to Analyze Frames153427
+Ref: frame_align155525
+Node: Functions to Access Frame Data157039
+Node: Analyzing Stacks---Frame Sniffers159330
+Ref: Analyzing Stacks---Frame Sniffers-Footnote-1163980
+Node: Inferior Call Setup164477
+Node: About Dummy Frames164760
+Node: Functions Creating Dummy Frames165386
+Node: Adding support for debugging core files169443
+Node: Defining Other Architecture Features169987
+Ref: gdbarch_breakpoint_from_pc174834
+Ref: gdbarch_stabs_argument_has_addr187228
+Ref: gdbarch_push_dummy_call187475
+Ref: gdbarch_push_dummy_code188035
+Ref: gdbarch_return_value189017
+Ref: gdbarch_dummy_id194783
+Node: Adding a New Target195471
+Node: Target Descriptions197938
+Node: Target Descriptions Implementation198877
+Node: Adding Target Described Register Support200251
+Node: Target Vector Definition203197
+Node: Managing Execution State203729
+Node: Existing Targets205542
+Node: Native Debugging208057
+Node: Support Libraries211885
+Node: Coding Standards223410
+Node: Misc Guidelines231290
+Node: Porting GDB249653
+Node: Versions and Branches251531
+Ref: Tags257487
+Ref: experimental branch tags257818
+Node: Start of New Year Procedure258550
+Node: Releasing GDB260356
+Node: Testsuite278588
+Ref: Testsuite-Footnote-1290453
+Node: Hints290571
+Node: Getting Started290893
+Node: Debugging GDB295058
+Node: GDB Observers300147
+Node: GNU Free Documentation License308560
+Node: Index333727
 
 End Tag Table
