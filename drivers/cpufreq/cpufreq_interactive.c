@@ -825,6 +825,9 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		break;
 
 	case CPUFREQ_GOV_STOP:
+		/* boost timer */
+		del_timer_sync(&boost_timer);
+
 		for_each_cpu(j, policy->cpus) {
 			pcpu = &per_cpu(cpuinfo, j);
 			pcpu->governor_enabled = 0;
@@ -885,6 +888,7 @@ static struct notifier_block cpufreq_interactive_idle_nb = {
 #ifdef CONFIG_HAS_EARLYSUSPEND
 static void cpufreq_gov_suspend(struct early_suspend *h)
 {
+<<<<<<< HEAD
 	cpufreq_gov_lcd_status_interactive = 0;
 	/*
 	 * During passive use-cases, i.e. when display is OFF,
@@ -894,6 +898,37 @@ static void cpufreq_gov_suspend(struct early_suspend *h)
 	 */
 	stored_timer_rate = timer_rate;
 	timer_rate = DEFAULT_TIMER_RATE * 10;
+=======
+	struct cpufreq_interactive_cpuinfo *pcpu;
+	unsigned int i;
+
+	if (!cpu_online(policy->cpu))
+		return -EINVAL;
+
+	if (timer_pending(&boost_timer))
+		return -EINVAL;
+
+	if (!boost_timeout)
+		return 0;
+
+	for_each_cpu(i, policy->cpus) {
+		pcpu = &per_cpu(cpuinfo, i);
+		pcpu->governor_enabled = 0;
+		smp_wmb();
+		del_timer_sync(&pcpu->cpu_timer);
+		pcpu->idle_exit_time = 0;
+	}
+
+	flush_work(&freq_scale_down_work);
+	__cpufreq_driver_target(policy, policy->max,
+			CPUFREQ_RELATION_H);
+
+	boost_timer.data = (unsigned long)policy;
+	mod_timer(&boost_timer,
+			jiffies + usecs_to_jiffies(boost_timeout));
+
+	return 0;
+>>>>>>> 6e80e13... cpufreq: interactive governor: Delete boost timer on CPUFREQ_GOV_STOP.
 }
 
 static void cpufreq_gov_resume(struct early_suspend *h)
