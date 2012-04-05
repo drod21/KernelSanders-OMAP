@@ -1496,7 +1496,7 @@ static struct clk dmic_sync_mux_ck = {
 	.clksel		= dmic_sync_mux_sel,
 	.init		= &omap2_init_clksel_parent,
 	.clksel_reg	= OMAP4430_CM1_ABE_DMIC_CLKCTRL,
-	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_MASK,
+	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_CM1_ABE_MASK,
 	.ops		= &clkops_null,
 	.recalc		= &omap2_clksel_recalc,
 };
@@ -1951,7 +1951,7 @@ static struct clk mcasp_sync_mux_ck = {
 	.clksel		= dmic_sync_mux_sel,
 	.init		= &omap2_init_clksel_parent,
 	.clksel_reg	= OMAP4430_CM1_ABE_MCASP_CLKCTRL,
-	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_MASK,
+	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_CM1_ABE_MASK,
 	.ops		= &clkops_null,
 	.recalc		= &omap2_clksel_recalc,
 };
@@ -1984,7 +1984,7 @@ static struct clk mcbsp1_sync_mux_ck = {
 	.clksel		= dmic_sync_mux_sel,
 	.init		= &omap2_init_clksel_parent,
 	.clksel_reg	= OMAP4430_CM1_ABE_MCBSP1_CLKCTRL,
-	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_MASK,
+	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_CM1_ABE_MASK,
 	.ops		= &clkops_null,
 	.recalc		= &omap2_clksel_recalc,
 };
@@ -2017,7 +2017,7 @@ static struct clk mcbsp2_sync_mux_ck = {
 	.clksel		= dmic_sync_mux_sel,
 	.init		= &omap2_init_clksel_parent,
 	.clksel_reg	= OMAP4430_CM1_ABE_MCBSP2_CLKCTRL,
-	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_MASK,
+	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_CM1_ABE_MASK,
 	.ops		= &clkops_null,
 	.recalc		= &omap2_clksel_recalc,
 };
@@ -2050,7 +2050,7 @@ static struct clk mcbsp3_sync_mux_ck = {
 	.clksel		= dmic_sync_mux_sel,
 	.init		= &omap2_init_clksel_parent,
 	.clksel_reg	= OMAP4430_CM1_ABE_MCBSP3_CLKCTRL,
-	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_MASK,
+	.clksel_mask	= OMAP4430_CLKSEL_INTERNAL_SOURCE_CM1_ABE_MASK,
 	.ops		= &clkops_null,
 	.recalc		= &omap2_clksel_recalc,
 };
