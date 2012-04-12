@@ -33,6 +33,12 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_interactive.h>
 
+#include <asm/cputime.h>
+
+#ifdef CONFIG_EARLYSUSPEND
+#include <linux/earlysuspend.h>
+#endif
+
 static atomic_t active_count = ATOMIC_INIT(0);
 
 struct cpufreq_interactive_cpuinfo {
@@ -64,13 +70,13 @@ static spinlock_t speedchange_cpumask_lock;
 static unsigned int hispeed_freq;
 
 /* Go to hi speed when CPU load at or above this value. */
-#define DEFAULT_GO_HISPEED_LOAD 85
+#define DEFAULT_GO_HISPEED_LOAD 95
 static unsigned long go_hispeed_load;
 
 /*
  * The minimum amount of time to spend at a frequency before we can ramp down.
  */
-#define DEFAULT_MIN_SAMPLE_TIME (80 * USEC_PER_MSEC)
+#define DEFAULT_MIN_SAMPLE_TIME (20 * USEC_PER_MSEC)
 static unsigned long min_sample_time;
 
 /*
@@ -78,6 +84,9 @@ static unsigned long min_sample_time;
  */
 #define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
 static unsigned long timer_rate;
+#ifdef CONFIG_EARLYSUSPEND
+static unsigned long stored_timer_rate;
+#endif
 
 /*
  * Wait this long before raising speed above hispeed, by default a single
@@ -748,6 +757,31 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 	return 0;
 }
 
+#ifdef CONFIG_EARLYSUSPEND
+/*
+ * During passive use-cases, i.e. when display is OFF,
+ * value of timer, which is used for frequency increasing,
+ * may be increased. This will significantly reduce the amount
+ * of OPP switching during passive use-cases.
+ */
+static void cpufreq_interactive_early_suspend(struct early_suspend *h)
+{
+	stored_timer_rate = timer_rate;
+	timer_rate = DEFAULT_TIMER_RATE * 10;
+}
+
+static void cpufreq_interactive_late_resume(struct early_suspend *h)
+{
+	timer_rate = stored_timer_rate;
+}
+
+static struct early_suspend cpufreq_interactive_early_suspend_info = {
+	.suspend = cpufreq_interactive_early_suspend,
+	.resume = cpufreq_interactive_late_resume,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB+1,
+};
+#endif
+
 static int __init cpufreq_interactive_init(void)
 {
 	unsigned int i;
@@ -780,6 +814,9 @@ static int __init cpufreq_interactive_init(void)
 	/* NB: wake up so the thread does not look hung to the freezer */
 	wake_up_process(speedchange_task);
 
+#ifdef CONFIG_EARLYSUSPEND
+	register_early_suspend(&cpufreq_interactive_early_suspend_info);
+#endif
 	return cpufreq_register_governor(&cpufreq_gov_interactive);
 }
 
@@ -792,8 +829,12 @@ module_init(cpufreq_interactive_init);
 static void __exit cpufreq_interactive_exit(void)
 {
 	cpufreq_unregister_governor(&cpufreq_gov_interactive);
+#ifdef CONFIG_EARLYSUSPEND
+	unregister_early_suspend(&cpufreq_interactive_early_suspend_info);
+#endif
 	kthread_stop(speedchange_task);
 	put_task_struct(speedchange_task);
+	destroy_workqueue(inputopen_wq);
 }
 
 module_exit(cpufreq_interactive_exit);
