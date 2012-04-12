@@ -34,6 +34,12 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_interactive.h>
 
+#include <asm/cputime.h>
+
+#ifdef CONFIG_EARLYSUSPEND
+#include <linux/earlysuspend.h>
+#endif
+
 static atomic_t active_count = ATOMIC_INIT(0);
 
 struct cpufreq_interactive_cpuinfo {
@@ -84,6 +90,9 @@ static unsigned long min_sample_time;
  */
 #define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
 static unsigned long timer_rate;
+#ifdef CONFIG_EARLYSUSPEND
+static unsigned long stored_timer_rate;
+#endif
 
 /*
  * Wait this long before raising speed above hispeed, by default a single
@@ -931,6 +940,31 @@ static struct notifier_block cpufreq_interactive_idle_nb = {
 	.notifier_call = cpufreq_interactive_idle_notifier,
 };
 
+#ifdef CONFIG_EARLYSUSPEND
+/*
+ * During passive use-cases, i.e. when display is OFF,
+ * value of timer, which is used for frequency increasing,
+ * may be increased. This will significantly reduce the amount
+ * of OPP switching during passive use-cases.
+ */
+static void cpufreq_interactive_early_suspend(struct early_suspend *h)
+{
+	stored_timer_rate = timer_rate;
+	timer_rate = DEFAULT_TIMER_RATE * 10;
+}
+
+static void cpufreq_interactive_late_resume(struct early_suspend *h)
+{
+	timer_rate = stored_timer_rate;
+}
+
+static struct early_suspend cpufreq_interactive_early_suspend_info = {
+	.suspend = cpufreq_interactive_early_suspend,
+	.resume = cpufreq_interactive_late_resume,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB+1,
+};
+#endif
+
 static int __init cpufreq_interactive_init(void)
 {
 	unsigned int i;
@@ -974,6 +1008,10 @@ static int __init cpufreq_interactive_init(void)
 
 	idle_notifier_register(&cpufreq_interactive_idle_nb);
 	INIT_WORK(&inputopen.inputopen_work, cpufreq_interactive_input_open);
+
+#ifdef CONFIG_EARLYSUSPEND
+	register_early_suspend(&cpufreq_interactive_early_suspend_info);
+#endif
 	return cpufreq_register_governor(&cpufreq_gov_interactive);
 
 err_freeuptask:
@@ -990,6 +1028,9 @@ module_init(cpufreq_interactive_init);
 static void __exit cpufreq_interactive_exit(void)
 {
 	cpufreq_unregister_governor(&cpufreq_gov_interactive);
+#ifdef CONFIG_EARLYSUSPEND
+	unregister_early_suspend(&cpufreq_interactive_early_suspend_info);
+#endif
 	kthread_stop(up_task);
 	put_task_struct(up_task);
 	destroy_workqueue(down_wq);
