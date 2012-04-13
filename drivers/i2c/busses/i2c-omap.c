@@ -553,11 +553,7 @@ static int omap_i2c_wait_for_bb(struct omap_i2c_dev *dev)
 			omap_i2c_dump(dev);
 			return -ETIMEDOUT;
 		}
-<<<<<<< HEAD
-		timeout += usleep_range(1000, 2000);
-=======
 		usleep_range(250, 500);
->>>>>>> c53ed36... i2c: use usleep_range to wait instead of msleep
 	}
 
 	return 0;
