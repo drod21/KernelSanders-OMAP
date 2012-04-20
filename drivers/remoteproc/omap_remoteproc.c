@@ -69,7 +69,7 @@ static int _suspend(struct omap_rproc_priv *rpp)
 		schedule();
 	}
 
-	return -EAGAIN;
+	return -EIO;
 }
 
 static int omap_suspend(struct rproc *rproc, bool force)
