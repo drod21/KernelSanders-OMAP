@@ -423,6 +423,13 @@ static int sr_class1p5_enable(struct voltagedomain *voltdm,
 	/* If already calibrated, nothing to do here.. */
 	if (volt_data->volt_calibrated)
 		return 0;
+	if (volt_data->volt_nominal > 1310000) {
+		pr_info("nominal@%d, skipping sr_enable\n",
+		  volt_data->volt_nominal);
+		volt_data->volt_calibrated = volt_data->volt_nominal;
+		volt_data->volt_dynamic_nominal = volt_data->volt_nominal;
+		return 0;
+	}
 
 	work_data = (struct sr_class1p5_work_data *)voltdm_cdata;
 	if (IS_ERR_OR_NULL(work_data)) {
