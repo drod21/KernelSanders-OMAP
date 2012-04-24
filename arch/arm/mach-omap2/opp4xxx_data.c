@@ -29,6 +29,48 @@
 #include "pm.h"
 
 /*
+ * STD_FUSE_OPP_DPLL_1 contains info about ABB trim type for MPU/IVA.
+ * This bit field definition is specific for OMAP4460 TURBO alone.
+ * For future OMAP4 silicon it is possible that other efuse offsets might
+ * be used in addition to controlling other OPPs as well.
+ * This probably is an ugly location to put the DPLL trim details.. but,
+ * alternatives are even less attractive :( shrug..
+ *
+ * CONTROL_STD_FUSE_OPP_DPLL_1 bit fields:
+ * Bit #|       Name       |        Description     |        Comment
+ * -----+------------------+------------------------+-------------------------
+ * 18-19|MPU_DPLL_TRIM_FREQ| 0 - 2.0GHz             | If RBB is not trimmed,
+ *      |                  | 1 - 2.4GHz             | but MPU DPLL is trimmed
+ *      |                  | 2 - Reserved           | to 2.4GHz of higher,
+ *      |                  | 3 - 3.0GHz             | it is recommended to
+ *      |                  |                        | enable FBB for MPU at
+ *      |                  |                        | OPPTB and OPPNT
+ * -----+------------------+------------------------+-------------------------
+ *  20  |    MPU_RBB_TB    | 0 - RBB is trimmed     | If trimmed RBB can be
+ *      |                  | 1 - RBB is not trimmed | enabled at OPPTB on MPU
+ * -----+------------------+                        +-------------------------
+ *  21  |    IVA_RBB_TB    |                        | If trimmed RBB can be
+ *      |                  |                        | enabled at OPPTB on IVA
+*/
+#define OMAP4460_MPU_OPP_DPLL_TRIM	BIT(18)
+#define OMAP4460_MPU_OPP_DPLL_TURBO_RBB	BIT(20)
+#define OMAP4460_IVA_OPP_DPLL_TURBO_RBB	BIT(21)
+
+/**
+ * struct omap4_ldo_abb_trim_data - describe ABB trim bits for specific voltage
+ * @volt_data:		voltage table
+ * @volt_nominal:	voltage for which ABB type should be modified according to trim bits.
+ * @rbb_trim_mask:	If this bit is set in trim register, ABB type should be modified to RBB.
+ * @fbb_trim_mask:	If this bit is set in trim register, ABB type should be modified to FBB.
+ */
+struct omap4_ldo_abb_trim_data {
+	struct omap_volt_data *volt_data;
+	u32 volt_nominal;
+	u32 rbb_trim_mask;
+	u32 fbb_trim_mask;
+};
+
+/*
  * Structures containing OMAP4430 voltage supported and various
  * voltage dependent data for each VDD.
  */
@@ -153,8 +195,8 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 	OPP_INITIALIZER("aess", "abe_clk", "iva", true, 196608000, OMAP4430_VDD_IVA_OPP100_UV),
 };
 
-#define OMAP4460_VDD_MPU_OPP25_UV		 875000
-#define OMAP4460_VDD_MPU_OPP50_UV		 900000
+#define OMAP4460_VDD_MPU_OPP25_UV		 900000
+#define OMAP4460_VDD_MPU_OPP50_UV		 925000
 #define OMAP4460_VDD_MPU_OPP75_UV		1015000
 #define OMAP4460_VDD_MPU_OPP100_UV		1150000
 #define OMAP4460_VDD_MPU_OPPTURBO_UV		1200000
@@ -168,11 +210,11 @@ struct omap_volt_data omap446x_vdd_mpu_volt_data[] = {
 	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPP50_UV, 10000, OMAP44XX_CONTROL_FUSE_MPU_OPP50, 0xf4, 0x0c, OMAP_ABB_NOMINAL_OPP),
 	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPP75_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPP75, 0xf9, 0x16, OMAP_ABB_NOMINAL_OPP),
 	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPP100_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPP100, 0xf9, 0x16, OMAP_ABB_NOMINAL_OPP),
-	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPTURBO_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPPTURBO, 0xfa, 0x23, OMAP_ABB_FAST_OPP),
-	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPORIG_UV, 10000, OMAP44XX_CONTROL_FUSE_MPU_OPPORIG, 0xfa, 0x23, OMAP_ABB_FAST_OPP),
-	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPNITRO_UV, 10000, OMAP44XX_CONTROL_FUSE_MPU_OPPNITRO, 0xfa, 0x27, OMAP_ABB_FAST_OPP),
-	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPNITROSB_UV, 10000, OMAP44XX_CONTROL_FUSE_MPU_OPPNITRO, 0xfa, 0x27, OMAP_ABB_FAST_OPP),
-	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPEXCRISP_UV, 10000, OMAP44XX_CONTROL_FUSE_MPU_OPPNITRO, 0xfa, 0x27, OMAP_ABB_FAST_OPP),
+	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPTURBO_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPPTURBO, 0xfa, 0x23, OMAP_ABB_NOMINAL_OPP),
+	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPORIG_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPPORIG, 0xfa, 0x23, OMAP_ABB_FAST_OPP),
+	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPNITRO_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPPNITRO, 0xfa, 0x27, OMAP_ABB_FAST_OPP),
+	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPNITROSB_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPPNITRO, 0xfa, 0x27, OMAP_ABB_FAST_OPP),
+	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPPEXCRISP_UV, 0, OMAP44XX_CONTROL_FUSE_MPU_OPPNITRO, 0xfa, 0x27, OMAP_ABB_FAST_OPP),
 	VOLT_DATA_DEFINE(0, 0, 0, 0, 0, 0),
 };
 
@@ -241,6 +283,13 @@ struct omap_vdd_dep_info omap446x_vddiva_dep_info[] = {
 	{.name = NULL, .dep_table = NULL, .nr_dep_entries = 0},
 };
 
+static struct omap4_ldo_abb_trim_data __initdata omap446x_ldo_abb_trim_data[] = {
+	{.volt_data = omap446x_vdd_mpu_volt_data, .volt_nominal = OMAP4460_VDD_MPU_OPPTURBO_UV, .rbb_trim_mask = OMAP4460_MPU_OPP_DPLL_TURBO_RBB,
+			.fbb_trim_mask = OMAP4460_MPU_OPP_DPLL_TRIM},
+	{.volt_data = omap446x_vdd_iva_volt_data, .volt_nominal = OMAP4460_VDD_IVA_OPPTURBO_UV, .rbb_trim_mask = OMAP4460_IVA_OPP_DPLL_TURBO_RBB},
+	{.volt_data = NULL},
+};
+
 static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
 #ifdef CONFIG_ORIGINAL_RECIPE
 	/* MPU OPP1 - OPP25 */
@@ -286,9 +335,6 @@ static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
 	OPP_INITIALIZER("iva", "virt_iva_ck", "iva", true, 332000000, OMAP4460_VDD_IVA_OPPTURBO_UV),
 	/* IVA OPP4 - OPP-Nitro */
 	OPP_INITIALIZER("iva", "virt_iva_ck", "iva", false, 430000000, OMAP4460_VDD_IVA_OPPNITRO_UV),
-	/* IVA OPP5 - OPP-Nitro SpeedBin*/
-	OPP_INITIALIZER("iva", "virt_iva_ck", "iva", false, 500000000, OMAP4460_VDD_IVA_OPPNITRO_UV),
-
 	/* SGX OPP1 - OPP50 */
 	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", true, 153600000, OMAP4460_VDD_CORE_OPP50_UV),
 	/* SGX OPP2 - OPP100 */
@@ -346,6 +392,59 @@ static void __init omap4_opp_enable(const char *oh_name, unsigned long freq)
 }
 
 /**
+ * omap4_abb_update() - update the ABB map for a specific voltage in table
+ * @vtable:	voltage table to update
+ * @voltage:	voltage whose voltage data needs update
+ * @abb_type:	what ABB type should we update it to?
+ */
+static void __init omap4_abb_update(struct omap_volt_data *vtable,
+				    unsigned long voltage, int abb_type)
+{
+	/* scan through and update the voltage table */
+	while (vtable->volt_nominal) {
+		if (vtable->volt_nominal == voltage) {
+			vtable->abb_type = abb_type;
+			return;
+		}
+		vtable++;
+	}
+	/* WARN noticably to get the developer to fix */
+	WARN(1, "%s: voltage %ld could not be set to ABB %d\n",
+	     __func__, voltage, abb_type);
+}
+
+/**
+ * omap4_abb_trim_update() - update the ABB mapping quirks for OMAP4460/4470
+ */
+static void __init omap4_abb_trim_update(
+		struct omap4_ldo_abb_trim_data *trim_data)
+{
+	u32 reg;
+	int abb_type;
+
+	if (!trim_data) {
+		pr_err("%s: Trim data is not valid\n", __func__);
+		return;
+	}
+
+	reg = omap_ctrl_readl(OMAP4_CTRL_MODULE_CORE_STD_FUSE_OPP_DPLL_1);
+
+	/* Update ABB configuration if at least one of trim bits is set
+	 * Leave default configuration in opposite case. */
+	for (; trim_data->volt_data; trim_data++) {
+		if (reg & trim_data->rbb_trim_mask)
+			abb_type = OMAP_ABB_SLOW_OPP;
+		else if (reg & trim_data->fbb_trim_mask)
+			abb_type = OMAP_ABB_FAST_OPP;
+		else
+			continue;
+
+		omap4_abb_update(trim_data->volt_data, trim_data->volt_nominal,
+				abb_type);
+	}
+}
+
+/**
  * omap4_opp_init() - initialize omap4 opp table
  */
 int __init omap4_opp_init(void)
@@ -359,6 +458,8 @@ int __init omap4_opp_init(void)
 		r = omap_init_opp_table(omap443x_opp_def_list,
 			ARRAY_SIZE(omap443x_opp_def_list));
 	else if (cpu_is_omap446x()) {
+		omap4_abb_trim_update(omap446x_ldo_abb_trim_data);
+
 		r = omap_init_opp_table(omap446x_opp_def_list,
 			ARRAY_SIZE(omap446x_opp_def_list));
 		//trimmed = omap_readl(0x4a002268) & ((1 << 18) | (1 << 19));
@@ -372,9 +473,6 @@ int __init omap4_opp_init(void)
 
 	 /* Enable Nitro and NitroSB IVA OPPs */
                omap4_opp_enable("iva", 430000000);
-	#ifdef CONFIG_CRISPY
-	       omap4_opp_enable("iva", 500000000);
-	#endif
 	//	if (omap4_has_mpu_1_2ghz())
 			omap4_opp_enable("mpu", 1200000000);
 		/* The tuna PCB doesn't support 1.5GHz, so lets drop it to 1.35GHz */
