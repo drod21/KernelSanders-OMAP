@@ -229,7 +229,11 @@ go_maxspeed_load: The CPU load at which to ramp to max speed.  Default
 is 85.
 
 timer_rate: Sample rate for reevaluating cpu load when the system is
-not idle.  Default is 30000 uS.
+not idle.  Default is 20000 uS.
+
+input_boost: If non-zero, boost speed of all CPUs to hispeed_freq on
+touchscreen activity.  Default is 0.
+
 
 2.7 Hotplug
 -----------
