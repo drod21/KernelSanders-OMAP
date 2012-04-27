@@ -99,6 +99,21 @@ static void maskref_decmask(struct maskref *om, u32 mask)
  * ===========================================================================
  */
 
+struct dsscomp_cb_work {
+	struct work_struct work;
+	struct dsscomp_data *comp;
+	int status;
+};
+
+struct dsscomp_apply_work {
+	struct work_struct work;
+	dsscomp_t comp;
+};
+
+/* Local caches */
+static struct kmem_cache *dsscomp_cb_wk_cachep;
+static struct kmem_cache *dsscomp_app_wk_cachep;
+
 /* Initialize queue structures, and set up state of the displays */
 int dsscomp_queue_init(struct dsscomp_dev *cdev_)
 {
@@ -128,6 +143,31 @@ int dsscomp_queue_init(struct dsscomp_dev *cdev_)
 	cb_wkq = create_singlethread_workqueue("dsscomp_cb");
 	if (!cb_wkq)
 		goto error;
+
+	/* create cache for dsscomp_cb_work structures */
+	if (!dsscomp_cb_wk_cachep) {
+		dsscomp_cb_wk_cachep = kmem_cache_create("cb_wk_cache",
+					sizeof(struct dsscomp_cb_work), 0,
+						SLAB_HWCACHE_ALIGN, NULL);
+		if (!dsscomp_cb_wk_cachep) {
+			pr_err("DSSCOMP: %s: can't create cache\n",
+							__func__);
+			goto error;
+		}
+	}
+
+	/* create cache for dsscomp_apply_work structures */
+	if (!dsscomp_app_wk_cachep) {
+		dsscomp_app_wk_cachep = kmem_cache_create("app_wk_cache",
+					sizeof(struct dsscomp_apply_work), 0,
+						SLAB_HWCACHE_ALIGN, NULL);
+		if (!dsscomp_app_wk_cachep) {
+			pr_err("DSSCOMP: %s: can't create cache\n", __func__);
+			/* destroy previously created cache */
+			kmem_cache_destroy(dsscomp_cb_wk_cachep);
+			goto error;
+		}
+	}
 
 	return 0;
 error:
@@ -369,16 +409,6 @@ void dsscomp_drop(dsscomp_t comp)
 }
 EXPORT_SYMBOL(dsscomp_drop);
 
-struct dsscomp_cb_work {
-	struct work_struct work;
-	struct dsscomp_data *comp;
-	int status;
-};
-
-/* Local caches */
-static struct kmem_cache *dsscomp_cb_wk_cachep;
-static struct kmem_cache *dsscomp_app_wk_cachep;
-
 static void dsscomp_mgr_delayed_cb(struct work_struct *work)
 {
 	struct dsscomp_cb_work *wk = container_of(work, typeof(*wk), work);
@@ -435,23 +465,12 @@ static u32 dsscomp_mgr_callback(void *data, int id, int status)
 	    (status & DSS_COMPLETION_RELEASED)) {
 		struct dsscomp_cb_work *wk;
 
-		/* at first time create cache */
-		if (!dsscomp_cb_wk_cachep) {
-			dsscomp_cb_wk_cachep = kmem_cache_create("cb_wk_cache",
-				sizeof(*wk), 0, SLAB_HWCACHE_ALIGN, NULL);
-			if (!dsscomp_cb_wk_cachep) {
-				printk(KERN_ERR "DSSCOMP: %s: can't create "
-							"cache\n", __func__);
-				return ~status;
-			}
-		}
-
 		/* allocate work object from cache */
 		wk = kmem_cache_zalloc(dsscomp_cb_wk_cachep, GFP_ATOMIC);
 		if (!wk) {
-			printk(KERN_ERR "DSSCOMP: %s: can't allocate object "
-						"from cache\n", __func__);
-			return ~status;
+			pr_err("DSSCOMP: %s: can't allocate cache object\n",
+								__func__);
+			BUG();
 		}
 
 		wk->comp = comp;
@@ -655,11 +674,6 @@ done:
 	return r;
 }
 
-struct dsscomp_apply_work {
-	struct work_struct work;
-	dsscomp_t comp;
-};
-
 int dsscomp_state_notifier(struct notifier_block *nb,
 						unsigned long arg, void *ptr)
 {
@@ -694,22 +708,11 @@ int dsscomp_delayed_apply(dsscomp_t comp)
 	/* don't block in case we are called from interrupt context */
 	struct dsscomp_apply_work *wk;
 
-	/* at first time create cache */
-	if (!dsscomp_app_wk_cachep) {
-		dsscomp_app_wk_cachep = kmem_cache_create("app_wk_cache",
-				sizeof(*wk), 0, SLAB_HWCACHE_ALIGN, NULL);
-		if (!dsscomp_app_wk_cachep) {
-			printk(KERN_ERR "DSSCOMP: %s: can't create cache\n",
-								__func__);
-			return -ENOMEM;
-		}
-	}
-
 	/* allocate work object from cache */
 	wk = kmem_cache_zalloc(dsscomp_app_wk_cachep, GFP_NOWAIT);
 	if (!wk) {
-		printk(KERN_ERR "DSSCOMP: %s: can't allocate object "
-						"from cache\n", __func__);
+		pr_warn("DSSCOMP: %s: can't allocate object from cache\n",
+								__func__);
 		return -ENOMEM;
 	}
 
