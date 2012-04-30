@@ -350,8 +350,9 @@ static int omap2430_musb_init(struct musb *musb)
 
 	status = pm_runtime_get_sync(dev);
 	if (status < 0) {
-		dev_err(dev, "pm_runtime_get_sync FAILED");
-		goto err2;
+
+		dev_err(dev, "pm_runtime_get_sync FAILED %d\n", status);
+		goto err1;
 	}
 
 	l = musb_readl(musb->mregs, OTG_INTERFSEL);
