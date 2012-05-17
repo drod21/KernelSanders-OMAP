@@ -176,9 +176,8 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	selected_oom_adj = min_adj;
 
 	rcu_read_lock();
-	for_each_process(p) {
-		struct mm_struct *mm;
-		struct signal_struct *sig;
+	for_each_process(tsk) {
+		struct task_struct *p;
 		int oom_adj;
 
 		if (tsk->flags & PF_KTHREAD)
