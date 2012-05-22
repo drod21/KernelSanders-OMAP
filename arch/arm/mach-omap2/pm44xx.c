@@ -94,15 +94,19 @@ static struct clockdomain *emif_clkdm, *mpuss_clkdm;
 /* Dynamic dependendency Cannot be enabled due to i688 erratum ID for 443x */
 #define OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_i688	BIT(3)
 /*
- * Dynamic Dependency cannot be permanently enabled due to i745 erratum ID
- * for 446x/447x
+ * Dynamic dependendency Cannot be enabled due to i688 erratum ID for above 443x
+ * NOTE: this is NOT YET a confirmed erratum for 446x, but provided here in
+ * anticipation.
+ * If a fix is found at a later date, the code using this can be removed.
  * WA involves:
  * Enable MPU->EMIF SD before WFI and disable while coming out of WFI.
  * This works around system hang/lockups seen when only MPU->EMIF
  * dynamic dependency set. Allows dynamic dependency to be used
  * in all active usecases and get all the power savings accordingly.
+ * TODO: Once this is available as final Errata, update with proper
+ * fix.
  */
-#define OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_i745	BIT(4)
+#define OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_iXXX	BIT(4)
 
 /*
  * There is a HW bug in CMD PHY which gives ISO signals as same for both
@@ -261,7 +265,7 @@ void omap4_enter_sleep(unsigned int cpu, unsigned int power_state, bool suspend)
 	if (ret)
 		goto abort_gpio;
 
-	if (is_pm44xx_erratum(MPU_EMIF_NO_DYNDEP_IDLE_i745) &&
+	if (is_pm44xx_erratum(MPU_EMIF_NO_DYNDEP_IDLE_iXXX) &&
 			mpu_next_state <= PWRDM_POWER_INACTIVE) {
 		/* Configures MEMIF clockdomain in SW_WKUP */
 		if (clkdm_wakeup(emif_clkdm)) {
@@ -391,7 +395,7 @@ abort_device_off:
 	 * NOTE: is_pm44xx_erratum is not strictly required, but retained for
 	 * code context redability.
 	 */
-	if (is_pm44xx_erratum(MPU_EMIF_NO_DYNDEP_IDLE_i745) &&
+	if (is_pm44xx_erratum(MPU_EMIF_NO_DYNDEP_IDLE_iXXX) &&
 			staticdep_wa_applied) {
 		/* Configures MEMIF clockdomain in SW_WKUP */
 		if (clkdm_wakeup(emif_clkdm))
@@ -1307,20 +1311,8 @@ static void __init omap4_pm_setup_errata(void)
 	if (cpu_is_omap443x()) {
 		/* Dynamic Dependency errata for all silicon !=443x */
 		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_i688;
-		/* Enable errata i612 */
-		pm44xx_errata |=
-			OMAP4_PM_ERRATUM_IO_WAKEUP_CLOCK_NOT_RECYCLED_i612;
-	} else
-		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_i745;
-
-	/*
-	 * The OFF mode isn't fully supported for OMAP4430GP ES2.0 - ES2.2
-	 * due to errata i625
-	 * On ES1.0 OFF mode is not supported due to errata i498
-	 */
-	if (cpu_is_omap443x() && (omap_type() == OMAP2_DEVICE_TYPE_GP) &&
-			(omap_rev() < OMAP4430_REV_ES2_3))
-		pm44xx_errata |= OMAP4_PM_ERRATUM_WUGEN_LOST_i625;
+	else
+		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_iXXX;
 }
 
 /**
