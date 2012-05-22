@@ -108,45 +108,8 @@ static struct clockdomain *emif_clkdm, *mpuss_clkdm;
  */
 #define OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_iXXX	BIT(4)
 
-/*
- * There is a HW bug in CMD PHY which gives ISO signals as same for both
- * PADn and PADp on differential IO pad, because of which IO leaks higher
- * as pull controls are differential internally and pull value does not
- * match A value.
- * Though there is no functionality impact due to this bug, it is seen
- * that by disabling the pulls there is a savings ~500uA in OSWR, but draws
- * ~300uA more during OFF mode.
- * To save power during both idle/suspend following approach taken:
- * 1) Enable WA during boot-up.
- * 2) Disable WA while attempting suspend and enable during resume.
- *
- * CDDS no: OMAP4460-1.0BUG00291 (OMAP official errata ID yet to be available).
- */
-#define OMAP4_PM_ERRATUM_LPDDR_CLK_IO_i736		BIT(5)
-#define LPDDR_WD_PULL_DOWN				0x02
-
-/*
- * The OFF mode isn't fully supported for OMAP4430GP ES2.0 - ES2.2
- * When coming back from device off mode, the Cortex-A9 WUGEN enable registers
- * are not restored by ROM code due to i625. The work around is using an
- * alternative power state (instead of off mode) which maintains the proper
- * register settings.
- */
-#define OMAP4_PM_ERRATUM_WUGEN_LOST_i625	BIT(6)
-
-/* TI Errata i612 - Wkup Clk Recycling Needed After Warm Reset
- * CRITICALITY: Low
- * REVISIONS IMPACTED: OMAP4430 all
- * Hardware does not recycle the I/O wake-up clock upon a global warm reset.
- * When a warm reset is done, wakeups of daisy I/Os are disabled,
- * but without the wake-up clock running, this change is not latched.
- * Hence there is a possibility of seeing unexpected I/O wake-up events
- * after warm reset.
- *
- * As W/A the call to omap4_trigger_ioctrl() has been added
- * at PM initialization time for I/O pads daisy chain reseting.
- **/
-#define OMAP4_PM_ERRATUM_IO_WAKEUP_CLOCK_NOT_RECYCLED_i612	BIT(7)
+#define OMAP4_PM_ERRATUM_LPDDR_CLK_IO_iXXX				BIT(5)
+#define LPDDR_WD_PULL_DOWN								0x02
 
 u8 pm44xx_errata;
 #define is_pm44xx_erratum(erratum) (pm44xx_errata & OMAP4_PM_ERRATUM_##erratum)
@@ -168,7 +131,7 @@ void syscontrol_lpddr_clk_io_errata(bool enable)
 {
 	u32 v = 0;
 
-	if (!is_pm44xx_erratum(LPDDR_CLK_IO_i736))
+	if (!is_pm44xx_erratum(LPDDR_CLK_IO_iXXX))
 		return;
 
 	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_2);
@@ -1305,11 +1268,10 @@ static void __init omap4_pm_setup_errata(void)
 	 */
 	if (cpu_is_omap44xx())
 		pm44xx_errata |= OMAP4_PM_ERRATUM_IVA_AUTO_RET_iXXX |
-				 OMAP4_PM_ERRATUM_HSI_SWAKEUP_iXXX |
-				 OMAP4_PM_ERRATUM_LPDDR_CLK_IO_i736;
-
-	if (cpu_is_omap443x()) {
-		/* Dynamic Dependency errata for all silicon !=443x */
+				OMAP4_PM_ERRATUM_HSI_SWAKEUP_iXXX |
+				OMAP4_PM_ERRATUM_LPDDR_CLK_IO_iXXX;
+	/* Dynamic Dependency errata for all silicon !=443x */
+	if (cpu_is_omap443x())
 		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_i688;
 	else
 		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_IDLE_iXXX;
