@@ -193,6 +193,24 @@ static int _update_sysc_cache(struct omap_hwmod *oh)
 
 	return 0;
 }
+/**
+ * _write_sysconfig_raw - write a value to the module's OCP_SYSCONFIG register
+ * @v: OCP_SYSCONFIG value to write
+ * @oh: struct omap_hwmod *
+ *
+ * Write @v into the module class' OCP_SYSCONFIG register, if it has
+ * one.  No return value. No sysc cache update.
+ */
+static void _write_sysconfig_raw(u32 v, struct omap_hwmod *oh)
+{
+	if (!oh->class->sysc) {
+		WARN(1, "omap_hwmod: %s: cannot write OCP_SYSCONFIG: not defined on hwmod's class\n", oh->name);
+		return;
+	}
+
+	omap_hwmod_write(v, oh, oh->class->sysc->sysc_offs);
+}
+
 
 /**
  * _write_sysconfig - write a value to the module's OCP_SYSCONFIG register
@@ -200,20 +218,14 @@ static int _update_sysc_cache(struct omap_hwmod *oh)
  * @oh: struct omap_hwmod *
  *
  * Write @v into the module class' OCP_SYSCONFIG register, if it has
- * one.  No return value.
+ * one.  No return value. Update sysc cache.
  */
 static void _write_sysconfig(u32 v, struct omap_hwmod *oh)
 {
-	if (!oh->class->sysc) {
-		WARN(1, "omap_hwmod: %s: cannot write OCP_SYSCONFIG: not defined on hwmod's class\n", oh->name);
-		return;
-	}
-
-	/* XXX ensure module interface clock is up */
+	_write_sysconfig_raw(v, oh);
 
 	/* Module might have lost context, always update cache and register */
 	oh->_sysc_cache = v;
-	omap_hwmod_write(v, oh, oh->class->sysc->sysc_offs);
 }
 
 /**
@@ -1180,7 +1192,7 @@ static int _ocp_softreset(struct omap_hwmod *oh)
 	ret = _set_softreset(oh, &v);
 	if (ret)
 		goto dis_opt_clks;
-	_write_sysconfig(v, oh);
+	_write_sysconfig_raw(v, oh);
 
 	if (oh->class->sysc->srst_udelay)
 		udelay(oh->class->sysc->srst_udelay);
@@ -1612,6 +1624,34 @@ void omap_hwmod_write(u32 v, struct omap_hwmod *oh, u16 reg_offs)
 		__raw_writew(v, oh->_mpu_rt_va + reg_offs);
 	else
 		__raw_writel(v, oh->_mpu_rt_va + reg_offs);
+}
+
+/**
+ * omap_hwmod_softreset - reset a module via SYSCONFIG.SOFTRESET bit
+ * @oh: struct omap_hwmod *
+ *
+ * This is a public function exposed to drivers. Some drivers may need to do
+ * some settings before and after resetting the device.  Those drivers after
+ * doing the necessary settings could use this function to start a reset by
+ * setting the SYSCONFIG.SOFTRESET bit.
+ */
+int omap_hwmod_softreset(struct omap_hwmod *oh)
+{
+	u32 v;
+	int ret;
+
+	if (!oh || !(oh->_sysc_cache))
+		return -EINVAL;
+
+	v = oh->_sysc_cache;
+	ret = _set_softreset(oh, &v);
+	if (ret)
+		goto error;
+	/* Use raw write here to avoid sysc cache update */
+	_write_sysconfig_raw(v, oh);
+
+error:
+	return ret;
 }
 
 /**
