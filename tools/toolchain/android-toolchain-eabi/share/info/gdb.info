@@ -1,5 +1,5 @@
 This is gdb.info, produced by makeinfo version 4.13 from
-/mnt/jenkins/workspace/linaro-android_toolchain-4.7-2012.06/build/objdir/../build/../gdb/gdb-linaro-7.4-2012.04/gdb/doc/gdb.texinfo.
+/mnt/jenkins/workspace/linaro-android_toolchain-4.7-2012.07/build/objdir/../build/../gdb/gdb-linaro-7.4-2012.06/gdb/doc/gdb.texinfo.
 
 INFO-DIR-SECTION Software development
 START-INFO-DIR-ENTRY
@@ -24,7 +24,7 @@ developing GNU and promoting software freedom."
    This file documents the GNU debugger GDB.
 
    This is the Tenth Edition, of `Debugging with GDB: the GNU
-Source-Level Debugger' for GDB (Linaro GDB) Version 7.4-2012.04.
+Source-Level Debugger' for GDB (Linaro GDB) Version 7.4-2012.06.
 
    Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
@@ -49,7 +49,7 @@ Debugging with GDB
 
 This file describes GDB, the GNU symbolic debugger.
 
-   This is the Tenth Edition, for GDB (Linaro GDB) Version 7.4-2012.04.
+   This is the Tenth Edition, for GDB (Linaro GDB) Version 7.4-2012.06.
 
    Copyright (C) 1988-2010 Free Software Foundation, Inc.
 
@@ -490,7 +490,7 @@ Let us use GDB to try to see what is going on.
      There is absolutely no warranty for GDB; type "show warranty"
       for details.
 
-     GDB 7.4-2012.04, Copyright 1999 Free Software Foundation, Inc...
+     GDB 7.4-2012.06, Copyright 1999 Free Software Foundation, Inc...
      (gdb)
 
 GDB reads only enough symbol data to know where to find the rest when
@@ -29296,7 +29296,7 @@ and TeX (or `texi2roff') to typeset the printed version.
 
    GDB includes an already formatted copy of the on-line Info version
 of this manual in the `gdb' subdirectory.  The main Info file is
-`gdb-linaro-7.4-2012.04/gdb/gdb.info', and it refers to subordinate
+`gdb-linaro-7.4-2012.06/gdb/gdb.info', and it refers to subordinate
 files matching `gdb.info*' in the same directory.  If necessary, you
 can print out these files, or read them with any editor; but they are
 easier to read using the `info' subsystem in GNU Emacs or the
@@ -29307,8 +29307,8 @@ distribution.
 Info formatting programs, such as `texinfo-format-buffer' or `makeinfo'.
 
    If you have `makeinfo' installed, and are in the top level GDB
-source directory (`gdb-linaro-7.4-2012.04', in the case of version
-7.4-2012.04), you can make the Info file by typing:
+source directory (`gdb-linaro-7.4-2012.06', in the case of version
+7.4-2012.06), you can make the Info file by typing:
 
      cd gdb
      make gdb.info
@@ -29333,7 +29333,7 @@ format.  On its own, TeX cannot either read or typeset a Texinfo file.
 
    If you have TeX and a DVI printer program installed, you can typeset
 and print this manual.  First switch to the `gdb' subdirectory of the
-main source directory (for example, to `gdb-linaro-7.4-2012.04/gdb')
+main source directory (for example, to `gdb-linaro-7.4-2012.06/gdb')
 and type:
 
      make gdb.dvi
@@ -29342,8 +29342,8 @@ and type:
 
    ---------- Footnotes ----------
 
-   (1) In `gdb-linaro-7.4-2012.04/gdb/refcard.ps' of the version
-7.4-2012.04 release.
+   (1) In `gdb-linaro-7.4-2012.06/gdb/refcard.ps' of the version
+7.4-2012.06 release.
 
 
 File: gdb.info,  Node: Installing GDB,  Next: Maintenance Commands,  Prev: Formatting Documentation,  Up: Top
@@ -29450,39 +29450,39 @@ preparing GDB for installation; you can then use `make' to build the
 in a single directory, whose name is usually composed by appending the
 version number to `gdb'.
 
-   For example, the GDB version 7.4-2012.04 distribution is in the
-`gdb-linaro-7.4-2012.04' directory.  That directory contains:
+   For example, the GDB version 7.4-2012.06 distribution is in the
+`gdb-linaro-7.4-2012.06' directory.  That directory contains:
 
-`gdb-linaro-7.4-2012.04/configure (and supporting files)'
+`gdb-linaro-7.4-2012.06/configure (and supporting files)'
      script for configuring GDB and all its supporting libraries
 
-`gdb-linaro-7.4-2012.04/gdb'
+`gdb-linaro-7.4-2012.06/gdb'
      the source specific to GDB itself
 
-`gdb-linaro-7.4-2012.04/bfd'
+`gdb-linaro-7.4-2012.06/bfd'
      source for the Binary File Descriptor library
 
-`gdb-linaro-7.4-2012.04/include'
+`gdb-linaro-7.4-2012.06/include'
      GNU include files
 
-`gdb-linaro-7.4-2012.04/libiberty'
+`gdb-linaro-7.4-2012.06/libiberty'
      source for the `-liberty' free software library
 
-`gdb-linaro-7.4-2012.04/opcodes'
+`gdb-linaro-7.4-2012.06/opcodes'
      source for the library of opcode tables and disassemblers
 
-`gdb-linaro-7.4-2012.04/readline'
+`gdb-linaro-7.4-2012.06/readline'
      source for the GNU command-line interface
 
-`gdb-linaro-7.4-2012.04/glob'
+`gdb-linaro-7.4-2012.06/glob'
      source for the GNU filename pattern-matching subroutine
 
-`gdb-linaro-7.4-2012.04/mmalloc'
+`gdb-linaro-7.4-2012.06/mmalloc'
      source for the GNU memory-mapped malloc package
 
    The simplest way to configure and build GDB is to run `configure'
 from the `gdb-VERSION-NUMBER' source directory, which in this example
-is the `gdb-linaro-7.4-2012.04' directory.
+is the `gdb-linaro-7.4-2012.06' directory.
 
    First switch to the `gdb-VERSION-NUMBER' source directory if you are
 not already in it; then run `configure'.  Pass the identifier for the
@@ -29490,7 +29490,7 @@ platform on which GDB will run as an argument.
 
    For example:
 
-     cd gdb-linaro-7.4-2012.04
+     cd gdb-linaro-7.4-2012.06
      ./configure HOST
      make
 
@@ -29512,7 +29512,7 @@ you may need to run `sh' on it explicitly:
 
    If you run `configure' from a directory that contains source
 directories for multiple libraries or programs, such as the
-`gdb-linaro-7.4-2012.04' source directory for version 7.4-2012.04,
+`gdb-linaro-7.4-2012.06' source directory for version 7.4-2012.06,
 `configure' creates configuration files for every directory level
 underneath (unless you tell it not to, with the `--norecursion' option).
 
@@ -29553,13 +29553,13 @@ directory.  If the path to `configure' would be the same as the
 argument to `--srcdir', you can leave out the `--srcdir' option; it is
 assumed.)
 
-   For example, with version 7.4-2012.04, you can build GDB in a
+   For example, with version 7.4-2012.06, you can build GDB in a
 separate directory for a Sun 4 like this:
 
-     cd gdb-linaro-7.4-2012.04
+     cd gdb-linaro-7.4-2012.06
      mkdir ../gdb-sun4
      cd ../gdb-sun4
-     ../gdb-linaro-7.4-2012.04/configure sun4
+     ../gdb-linaro-7.4-2012.06/configure sun4
      make
 
    When `configure' builds a configuration using a remote source
@@ -29570,7 +29570,7 @@ directory `gdb-sun4/libiberty', and GDB itself in `gdb-sun4/gdb'.
 
    Make sure that your path to the `configure' script has just one
 instance of `gdb' in it.  If your path to `configure' looks like
-`../gdb-linaro-7.4-2012.04/gdb/configure', you are configuring only one
+`../gdb-linaro-7.4-2012.06/gdb/configure', you are configuring only one
 subdirectory of GDB, not the whole package.  This leads to build errors
 about missing include files such as `bfd/bfd.h'.
 
@@ -29586,8 +29586,8 @@ called `configure' (or one of its subdirectories).
 
    The `Makefile' that `configure' generates in each source directory
 also runs recursively.  If you type `make' in a source directory such
-as `gdb-linaro-7.4-2012.04' (or in a separate configured directory
-configured with `--srcdir=DIRNAME/gdb-linaro-7.4-2012.04'), you will
+as `gdb-linaro-7.4-2012.06' (or in a separate configured directory
+configured with `--srcdir=DIRNAME/gdb-linaro-7.4-2012.06'), you will
 build all the required libraries, and then build GDB.
 
    When you have multiple hosts or targets configured in separate
@@ -29632,7 +29632,7 @@ you can use it to test your guesses on abbreviations--for example:
      Invalid configuration `i986v': machine `i986v' not recognized
 
 `config.sub' is also distributed in the GDB source directory
-(`gdb-linaro-7.4-2012.04', for version 7.4-2012.04).
+(`gdb-linaro-7.4-2012.06', for version 7.4-2012.06).
 
 
 File: gdb.info,  Node: Configure Options,  Next: System-wide configuration,  Prev: Config Names,  Up: Installing GDB
