@@ -716,7 +716,20 @@ static int __init snd_usb_audio_init(void)
 		printk(KERN_WARNING "invalid nrpacks value.\n");
 		return -EINVAL;
 	}
-	return usb_register(&usb_audio_driver);
+
+	sdev.name = "usb_audio";
+
+	if (switch_dev_register(&sdev)) {
+		snd_printk(KERN_ERR "error registering switch device");
+		return -EINVAL;
+	}
+
+	err = usb_register(&usb_audio_driver);
+
+	if (err)
+		switch_dev_unregister(&sdev);
+
+	return err;
 }
 
 static void __exit snd_usb_audio_cleanup(void)
