@@ -1412,7 +1412,6 @@ static void __init omap4_pm_setup_errata(void)
 
 	if (cpu_is_omap443x()) {
 		/* Dynamic Dependency errata for all silicon !=443x */
-reset.
 		pm44xx_errata |= OMAP4_PM_ERRATUM_MPU_EMIF_NO_DYNDEP_i688;
 		/* Enable errata i612 */
 		pm44xx_errata |=
