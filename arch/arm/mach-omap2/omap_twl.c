@@ -596,8 +596,7 @@ static __initdata struct omap_pmic_map omap_twl_map[] = {
 	},
 	{
 		.name = "mpu",
-		.omap_chip = OMAP_CHIP_INIT(CHIP_IS_OMAP443X |
-						CHIP_IS_OMAP447X),
+		.omap_chip = OMAP_CHIP_INIT(CHIP_IS_OMAP443X),
 		.pmic_data = &omap443x_447x_mpu_pmic,
 		.special_action = twl6030_set_offset,
 	},
@@ -613,20 +612,20 @@ static __initdata struct omap_pmic_map omap_twl_map[] = {
 		.pmic_data = &omap446x_core_pmic,
 		.special_action = twl_set_4460vcore,
 	},
-	{
+/*	{
 		.name = "core",
 		.omap_chip = OMAP_CHIP_INIT(CHIP_IS_OMAP447X),
 		.pmic_data = &omap447x_core_pmic,
 		.special_action = twl6030_set_offset,
 	},
-	{
+*/	{
 		.name = "iva",
 		.omap_chip = OMAP_CHIP_INIT(CHIP_IS_OMAP443X |
 						CHIP_IS_OMAP446X),
 		.pmic_data = &omap443x_446x_iva_pmic,
 		.special_action = twl6030_set_offset,
 	},
-	{
+/*	{
 		.name = "iva",
 		.omap_chip = OMAP_CHIP_INIT(CHIP_IS_OMAP447X),
 		.pmic_data = &omap447x_iva_pmic,
