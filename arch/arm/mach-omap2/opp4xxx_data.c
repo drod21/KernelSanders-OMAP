@@ -196,7 +196,7 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 };
 
 //#define OMAP4460_VDD_MPU_OPP25_UV		 900000
-#define OMAP4460_VDD_MPU_OPP50_UV		 925000
+#define OMAP4460_VDD_MPU_OPP50_UV		 900000
 #define OMAP4460_VDD_MPU_OPP75_UV		1015000
 #define OMAP4460_VDD_MPU_OPP100_UV		1150000
 #define OMAP4460_VDD_MPU_OPPTURBO_UV		1200000
@@ -231,7 +231,7 @@ struct omap_volt_data omap446x_vdd_iva_volt_data[] = {
 	VOLT_DATA_DEFINE(0, 0, 0, 0, 0, 0),
 };
 
-#define OMAP4460_VDD_CORE_OPP10_UV		 815000
+#define OMAP4460_VDD_CORE_OPP10_UV		 850000
 #define OMAP4460_VDD_CORE_OPP50_UV		 962000
 #define OMAP4460_VDD_CORE_OPP100_UV		1127000
 #define OMAP4460_VDD_CORE_OPP100_OV_UV		1250000
@@ -347,7 +347,7 @@ static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
 	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", true, 307200000, OMAP4460_VDD_CORE_OPP100_UV),
 #ifdef CONFIG_CRISPY
 	/* SGX OPP3 - OPPOV */
-	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", true, 384000000, OMAP4460_VDD_CORE_OPP100_OV_UV),
+	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", true, 384000000, OMAP4460_VDD_CORE_OPP100_UV),
 #else
 	/* SGX OPP3 - OPPOV */
 	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", false, 384000000, OMAP4460_VDD_CORE_OPP100_UV),
