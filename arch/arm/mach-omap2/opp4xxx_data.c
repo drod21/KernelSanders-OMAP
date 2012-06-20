@@ -196,7 +196,7 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 };
 
 //#define OMAP4460_VDD_MPU_OPP25_UV		 900000
-#define OMAP4460_VDD_MPU_OPP50_UV		 900000
+#define OMAP4460_VDD_MPU_OPP50_UV		 925000
 #define OMAP4460_VDD_MPU_OPP75_UV		1015000
 #define OMAP4460_VDD_MPU_OPP100_UV		1150000
 #define OMAP4460_VDD_MPU_OPPTURBO_UV		1200000
@@ -293,7 +293,7 @@ static struct omap4_ldo_abb_trim_data __initdata omap446x_ldo_abb_trim_data[] = 
 static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
 #ifdef CONFIG_ORIGINAL_RECIPE
 	/* MPU OPP1 - OPP25
-	** Disable for now. It's causing battery drain and instability for some
+	** Disable for now. It's causing battery drain and instability
 	 */
 	//OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 230000000, OMAP4460_VDD_MPU_OPP25_UV),
 	/* MPU OPP1 - OPP50 */
@@ -478,11 +478,8 @@ int __init omap4_opp_init(void)
 		goto out;
 
 	 /* Enable Nitro and NitroSB IVA OPPs */
-               omap4_opp_enable("iva", 430000000);
-	//	if (omap4_has_mpu_1_2ghz())
+                        omap4_opp_enable("iva", 430000000);
 			omap4_opp_enable("mpu", 1200000000);
-		/* The tuna PCB doesn't support 1.5GHz, so lets drop it to 1.35GHz */
-	//	if (omap4_has_mpu_1_5ghz())
 	#ifdef CONFIG_CRISPY
 			omap4_opp_enable("mpu", 1350000000);
 			omap4_opp_enable("mpu", 1520000000);
