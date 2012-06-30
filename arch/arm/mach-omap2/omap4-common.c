@@ -31,13 +31,13 @@
 #include "clockdomain.h"
 
 #ifdef CONFIG_CACHE_L2X0
-#define L2X0_POR_OFFSET_VALUE	0x5
-#define L2X0_POR_OFFSET_MASK	0x1f
+#define L2X0_POR_OFFSET_VALUE		0x7
 static void __iomem *l2cache_base;
 #endif
 
 static void __iomem *gic_dist_base_addr;
 static void __iomem *gic_cpu_base;
+static struct clockdomain *l4_secure_clkdm;
 static void *dram_barrier_base;
 
 static void omap_bus_sync_noop(void)
@@ -211,7 +211,7 @@ static int __init omap_l2_cache_init(void)
 	 */
 	por_ctrl &= ~(1 << L2X0_PREFETCH_DOUBLE_LINEFILL_SHIFT);
 	if (!mpu_prefetch_disable_errata) {
-		por_ctrl &= ~L2X0_POR_OFFSET_MASK;
+		por_ctrl |= 1 << L2X0_PREFETCH_DATA_PREFETCH_SHIFT;
 		por_ctrl |= L2X0_POR_OFFSET_VALUE;
 	}
 
