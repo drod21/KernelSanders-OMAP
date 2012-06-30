@@ -38,17 +38,6 @@
 
 #define OMAP_MCBSP_RATES	(SNDRV_PCM_RATE_8000_96000)
 
-#define C_OPP_PATCH
-
-#ifdef C_OPP_PATCH
-
-#define SET_MPU_CORE_CONSTRAINT		18
-#define CLEAR_MPU_CORE_CONSTRAINT	-1
-
-static int snd_hw_latency;
-static struct pm_qos_request_list pm_qos_handle;
-#endif
-
 #define OMAP_MCBSP_SOC_SINGLE_S16_EXT(xname, xmin, xmax, \
 	xhandler_get, xhandler_put) \
 {	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
@@ -199,32 +188,11 @@ static int omap_mcbsp_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 		mcbsp_data->active++;
 		omap_mcbsp_start(mcbsp_data->bus_id, play, !play);
-#ifdef C_OPP_PATCH
-	    /*
-	     * Hold  min latency constraint. Deeper states
-	     * MPU RET/OFF is overhead and consume more power than
-	     * savings.
-	     * snd_hw_latency check takes care of playback and capture
-	     * usecase.
-	     */
-		if (!snd_hw_latency++) {
-			pm_qos_update_request(&pm_qos_handle,
-				SET_MPU_CORE_CONSTRAINT);
-		}
-#endif
 		break;
 
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-#ifdef C_OPP_PATCH
-	      /* remove latency constraint */
-		snd_hw_latency--;
-		if (!snd_hw_latency) {
-			pm_qos_update_request(&pm_qos_handle,
-				CLEAR_MPU_CORE_CONSTRAINT);
-		}
-#endif
 		omap_mcbsp_stop(mcbsp_data->bus_id, play, !play);
 		mcbsp_data->active--;
 		break;
@@ -349,10 +317,6 @@ static int omap_mcbsp_dai_hw_params(struct snd_pcm_substream *substream,
 		return 0;
 	}
 
-	regs->rcr2	&= ~(RPHASE | RFRLEN2(0x7f) | RWDLEN2(7));
-	regs->xcr2	&= ~(RPHASE | XFRLEN2(0x7f) | XWDLEN2(7));
-	regs->rcr1	&= ~(RFRLEN1(0x7f) | RWDLEN1(7));
-	regs->xcr1	&= ~(XFRLEN1(0x7f) | XWDLEN1(7));
 	format = mcbsp_data->fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 	wpf = channels = params_channels(params);
 	if (channels == 2 && (format == SND_SOC_DAIFMT_I2S ||
@@ -405,8 +369,6 @@ static int omap_mcbsp_dai_hw_params(struct snd_pcm_substream *substream,
 		framesize = wlen * channels;
 
 	/* Set FS period and length in terms of bit clock periods */
-	regs->srgr2	&= ~FPER(0xfff);
-	regs->srgr1	&= ~FWID(0xff);
 	switch (format) {
 	case SND_SOC_DAIFMT_I2S:
 	case SND_SOC_DAIFMT_LEFT_J:
@@ -436,7 +398,7 @@ static int omap_mcbsp_dai_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 {
 	struct omap_mcbsp_data *mcbsp_data = snd_soc_dai_get_drvdata(cpu_dai);
 	struct omap_mcbsp_reg_cfg *regs = &mcbsp_data->regs;
-	bool inv_fs = false;
+	unsigned int temp_fmt = fmt;
 
 	if (mcbsp_data->configured)
 		return 0;
@@ -468,21 +430,21 @@ static int omap_mcbsp_dai_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 		regs->xcr2	|= XDATDLY(0);
 		regs->spcr1	|= RJUST(2);
 		/* Invert FS polarity configuration */
-		inv_fs = true;
+		temp_fmt ^= SND_SOC_DAIFMT_NB_IF;
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
 		/* 1-bit data delay */
 		regs->rcr2      |= RDATDLY(1);
 		regs->xcr2      |= XDATDLY(1);
 		/* Invert FS polarity configuration */
-		inv_fs = true;
+		temp_fmt ^= SND_SOC_DAIFMT_NB_IF;
 		break;
 	case SND_SOC_DAIFMT_DSP_B:
 		/* 0-bit data delay */
 		regs->rcr2      |= RDATDLY(0);
 		regs->xcr2      |= XDATDLY(0);
 		/* Invert FS polarity configuration */
-		inv_fs = true;
+		temp_fmt ^= SND_SOC_DAIFMT_NB_IF;
 		break;
 	default:
 		/* Unsupported data format */
@@ -506,7 +468,7 @@ static int omap_mcbsp_dai_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 	}
 
 	/* Set bit clock (CLKX/CLKR) and FS polarities */
-	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
+	switch (temp_fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF:
 		/*
 		 * Normal BCLK + FS.
@@ -527,8 +489,6 @@ static int omap_mcbsp_dai_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 	default:
 		return -EINVAL;
 	}
-	if (inv_fs == true)
-		regs->pcr0 ^= FSXP | FSRP;
 
 	return 0;
 }
@@ -543,7 +503,6 @@ static int omap_mcbsp_dai_set_clkdiv(struct snd_soc_dai *cpu_dai,
 		return -ENODEV;
 
 	mcbsp_data->clk_div = div;
-	regs->srgr1	&= ~CLKGDV(0xff);
 	regs->srgr1	|= CLKGDV(div - 1);
 
 	return 0;
@@ -557,12 +516,11 @@ static int omap_mcbsp_dai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 	struct omap_mcbsp_reg_cfg *regs = &mcbsp_data->regs;
 	int err = 0;
 
-	if (mcbsp_data->active) {
+	if (mcbsp_data->active)
 		if (freq == mcbsp_data->in_freq)
 			return 0;
 		else
 			return -EBUSY;
-	}
 
 	/* The McBSP signal muxing functions are only available on McBSP1 */
 	if (clk_id == OMAP_MCBSP_CLKR_SRC_CLKR ||
@@ -573,8 +531,6 @@ static int omap_mcbsp_dai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 			return -EINVAL;
 
 	mcbsp_data->in_freq = freq;
-	regs->srgr2	&= ~CLKSM;
-	regs->pcr0	&= ~SCLKME;
 
 	switch (clk_id) {
 	case OMAP_MCBSP_SYSCLK_CLK:
@@ -649,7 +605,8 @@ static int mcbsp_dai_probe(struct snd_soc_dai *dai)
 	return 0;
 }
 
-static struct snd_soc_dai_driver omap_mcbsp_dai = {
+static struct snd_soc_dai_driver omap_mcbsp_dai =
+{
 	.probe = mcbsp_dai_probe,
 	.playback = {
 		.channels_min = 1,
@@ -819,10 +776,6 @@ static struct platform_driver asoc_mcbsp_driver = {
 
 static int __init snd_omap_mcbsp_init(void)
 {
-#ifdef C_OPP_PATCH
-	pm_qos_add_request(&pm_qos_handle, PM_QOS_CPU_DMA_LATENCY,
-					CLEAR_MPU_CORE_CONSTRAINT);
-#endif
 	return platform_driver_register(&asoc_mcbsp_driver);
 }
 module_init(snd_omap_mcbsp_init);

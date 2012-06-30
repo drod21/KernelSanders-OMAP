@@ -462,7 +462,8 @@ EXPORT_SYMBOL(omap_abe_set_router_configuration);
  */
 int omap_abe_set_opp_processing(struct omap_abe *abe, u32 opp)
 {
-	u32 dOppMode32;
+	u32 dOppMode32, sio_desc_address;
+	struct ABE_SIODescriptor sio_desc;
 
 	_log(ABE_ID_SET_OPP_PROCESSING, opp, 0, 0);
 
