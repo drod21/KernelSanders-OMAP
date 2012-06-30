@@ -612,7 +612,7 @@ void dsscomp_kdump(void)
 	};
 	int i;
 
-	dsscomp_dbg_events(&s);
+//	dsscomp_dbg_events(&s);
 	dsscomp_dbg_comps(&s);
 	dsscomp_dbg_gralloc(&s);
 
