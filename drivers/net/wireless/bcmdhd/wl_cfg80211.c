@@ -1214,6 +1214,7 @@ static void wl_scan_prep(struct wl_scan_params *params, struct cfg80211_scan_req
 	params->passive_time = htod32(params->passive_time);
 	params->home_time = htod32(params->home_time);
 
+	/* if request is null just exit so it will be all channel broadcast scan */
 	if (!request)
 		return;
 
@@ -1569,7 +1570,7 @@ __wl_cfg80211_scan(struct wiphy *wiphy, struct net_device *ndev,
 		return -EAGAIN;
 	}
 	if (request && request->n_ssids > WL_SCAN_PARAMS_SSID_MAX) {
-		WL_ERR(("n_ssids > WL_SCAN_PARAMS_SSID_MAX\n"));
+		WL_ERR(("request null or n_ssids > WL_SCAN_PARAMS_SSID_MAX\n"));
 		return -EOPNOTSUPP;
 	}
 
