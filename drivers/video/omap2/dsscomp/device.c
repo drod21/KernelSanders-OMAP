@@ -542,11 +542,11 @@ static int dsscomp_probe(struct platform_device *pdev)
 			cdev->dbgfs, dsscomp_dbg_comps, &dsscomp_debug_fops);
 		debugfs_create_file("gralloc", S_IRUGO,
 			cdev->dbgfs, dsscomp_dbg_gralloc, &dsscomp_debug_fops);
-/*#ifdef CONFIG_DSSCOMP_DEBUG_LOG
+#ifdef CONFIG_DSSCOMP_DEBUG_LOG
 		debugfs_create_file("log", S_IRUGO,
 			cdev->dbgfs, dsscomp_dbg_events, &dsscomp_debug_fops);
 #endif
-*/	}
+	}
 
 	platform_set_drvdata(pdev, cdev);
 
