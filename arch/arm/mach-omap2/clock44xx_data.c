@@ -1505,7 +1505,7 @@ static struct clk dmic_fck = {
 
 static struct clk dsp_fck = {
 	.name		= "dsp_fck",
-	.ops		= &clkops_omap4_dflt_wait,
+	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= OMAP4430_CM_TESLA_TESLA_CLKCTRL,
 	.enable_bit	= OMAP4430_MODULEMODE_HWCTRL,
 	.clkdm_name	= "tesla_clkdm",
@@ -1855,7 +1855,7 @@ static struct clk i2c4_fck = {
 
 static struct clk ipu_fck = {
 	.name		= "ipu_fck",
-	.ops		= &clkops_omap4_dflt_wait,
+	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= OMAP4430_CM_DUCATI_DUCATI_CLKCTRL,
 	.enable_bit	= OMAP4430_MODULEMODE_HWCTRL,
 	.clkdm_name	= "ducati_clkdm",
@@ -1885,7 +1885,7 @@ static struct clk iss_fck = {
 
 static struct clk iva_fck = {
 	.name		= "iva_fck",
-	.ops		= &clkops_omap4_dflt_wait,
+	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= OMAP4430_CM_IVAHD_IVAHD_CLKCTRL,
 	.enable_bit	= OMAP4430_MODULEMODE_HWCTRL,
 	.clkdm_name	= "ivahd_clkdm",
