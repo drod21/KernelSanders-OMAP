@@ -241,11 +241,12 @@ static void __init omap4_check_features(void)
 		switch ((si_type & (3 << 16)) >> 16) {
 		case 2:
 			/* High performance device */
-			omap4_features |= OMAP4_HAS_MPU_1_5GHZ;
+			omap4_features |= OMAP4_HAS_MPU_1_35GHZ;
 			omap4_features |= OMAP4_HAS_MPU_1_2GHZ;
 			break;
 		case 1:
 		default:
+			omap4_features |= OMAP4_HAS_MPU_1_35GHZ;
 			/* Standard device */
 			omap4_features |= OMAP4_HAS_MPU_1_2GHZ;
 			break;
