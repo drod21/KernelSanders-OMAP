@@ -19,7 +19,7 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define DEBUG
+#undef	 DEBUG
 
 #include <linux/err.h>
 #include <linux/platform_device.h>
@@ -606,6 +606,7 @@ static void __exit dsscomp_exit(void)
 static char dump_buf[64 * 1024];
 void dsscomp_kdump(void)
 {
+#ifdef CONFIG_DSSCOMP_DEBUG_LOG
 	struct seq_file s = {
 		.buf = dump_buf,
 		.size = sizeof(dump_buf) - 1,
@@ -627,6 +628,7 @@ void dsscomp_kdump(void)
 			pr_cont("%s", s.buf + i);
 		}
 	}
+#endif
 }
 EXPORT_SYMBOL(dsscomp_kdump);
 
