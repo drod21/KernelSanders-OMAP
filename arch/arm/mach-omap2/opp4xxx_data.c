@@ -323,7 +323,7 @@ int __init omap4_opp_init(void)
 
 	if (!r) {
 			omap4_mpu_opp_enable(1200000000);
-			omap4_mpu_opp_enable(1500000000);
+			omap4_mpu_opp_enable(1350000000);
 	}
 
 	return r;
