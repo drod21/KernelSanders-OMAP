@@ -343,5 +343,9 @@ module_exit(sio_exit);
 
 MODULE_AUTHOR("Miguel Boton");
 MODULE_LICENSE("GPL");
+<<<<<<< HEAD
 MODULE_DESCRIPTION("Simple IO scheduler");
 
+=======
+MODULE_DESCRIPTION("Simple IO scheduler");
+>>>>>>> 86b41df... Added Simple I/O (SIO) scheduler.
