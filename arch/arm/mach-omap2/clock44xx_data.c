@@ -1861,7 +1861,6 @@ static struct clk ipu_fck = {
 	.clkdm_name	= "ducati_clkdm",
 	.parent		= &ducati_clk_mux_ck,
 	.recalc		= &followparent_recalc,
-	.speculate	= &omap2_clksel_speculate,
 };
 
 static struct clk iss_ctrlclk = {
