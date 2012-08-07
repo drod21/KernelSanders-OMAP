@@ -675,11 +675,7 @@ static int move_to_new_page(struct page *newpage, struct page *page,
 }
 
 static int __unmap_and_move(struct page *page, struct page *newpage,
-<<<<<<< HEAD
 			int force, bool offlining, enum migrate_mode mode)
-=======
-				int force, bool offlining, bool sync)
->>>>>>> 331fae6... mm: migration: clean up unmap_and_move()
 {
 	int rc = -EAGAIN;
 	int remap_swapcache = 1;
@@ -688,11 +684,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 	struct anon_vma *anon_vma = NULL;
 
 	if (!trylock_page(page)) {
-<<<<<<< HEAD
 		if (!force || mode == MIGRATE_ASYNC)
-=======
-		if (!force || !sync)
->>>>>>> 331fae6... mm: migration: clean up unmap_and_move()
 			goto out;
 
 		/*
@@ -831,7 +823,6 @@ unlock:
 out:
 	return rc;
 }
-<<<<<<< HEAD
 
 /*
  * Obtain the lock on page, remove all ptes and migrate the page
@@ -855,37 +846,11 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
 		goto out;
 	}
 
-=======
-
-/*
- * Obtain the lock on page, remove all ptes and migrate the page
- * to the newly allocated page in newpage.
- */
-static int unmap_and_move(new_page_t get_new_page, unsigned long private,
-			struct page *page, int force, bool offlining, bool sync)
-{
-	int rc = 0;
-	int *result = NULL;
-	struct page *newpage = get_new_page(page, private, &result);
-
-	if (!newpage)
-		return -ENOMEM;
-
-	if (page_count(page) == 1) {
-		/* page was freed from under us. So we are done. */
-		goto out;
-	}
-
->>>>>>> 331fae6... mm: migration: clean up unmap_and_move()
 	if (unlikely(PageTransHuge(page)))
 		if (unlikely(split_huge_page(page)))
 			goto out;
 
-<<<<<<< HEAD
 	rc = __unmap_and_move(page, newpage, force, offlining, mode);
-=======
-	rc = __unmap_and_move(page, newpage, force, offlining, sync);
->>>>>>> 331fae6... mm: migration: clean up unmap_and_move()
 out:
 	if (rc != -EAGAIN) {
 		/*
