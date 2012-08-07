@@ -244,14 +244,11 @@ static inline void lru_cache_add_file_tail(struct page *page, int tail)
 	____lru_cache_add(page, LRU_INACTIVE_FILE, tail);
 }
 
-<<<<<<< HEAD
 static inline void lru_cache_add_file(struct page *page)
 {
 	____lru_cache_add(page, LRU_INACTIVE_FILE, 0);
 }
 
-=======
->>>>>>> a15a397... mm: change isolate mode from #define to bitwise type
 /* linux/mm/vmscan.c */
 extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 					gfp_t gfp_mask, nodemask_t *mask);
@@ -262,11 +259,7 @@ extern unsigned long mem_cgroup_shrink_node_zone(struct mem_cgroup *mem,
 						gfp_t gfp_mask, bool noswap,
 						struct zone *zone,
 						unsigned long *nr_scanned);
-<<<<<<< HEAD
 //extern int __isolate_lru_page(struct page *page, int mode, int file);
-=======
-extern int __isolate_lru_page(struct page *page, isolate_mode_t mode, int file);
->>>>>>> a15a397... mm: change isolate mode from #define to bitwise type
 extern unsigned long shrink_all_memory(unsigned long nr_pages);
 extern int vm_swappiness;
 extern int remove_mapping(struct address_space *mapping, struct page *page);

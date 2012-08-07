@@ -1517,11 +1517,8 @@ shrink_inactive_list(unsigned long nr_to_scan, struct zone *zone,
 	unsigned long nr_taken;
 	unsigned long nr_anon;
 	unsigned long nr_file;
-<<<<<<< HEAD
 	unsigned long nr_dirty = 0;
 	unsigned long nr_writeback = 0;
-=======
->>>>>>> a15a397... mm: change isolate mode from #define to bitwise type
 	isolate_mode_t reclaim_mode = ISOLATE_INACTIVE;
 
 	while (unlikely(too_many_isolated(zone, file, sc))) {
