@@ -1,7 +1,7 @@
 #!/bin/sh
 # This script will make kernels, and then package them for release.
 
-PRODUCT1=KernelSanders
+PRODUCT1=KernelSanders-Original-Recipe
 PRODUCT2=KernelSanders-Crispy
 # PRODUCT3=<insert product name>
 
