@@ -18,7 +18,7 @@ export CCOMPILER=$TOOLCHAIN
 echo "===== Setting up $PRODUCT defconfig ======"
 make ARCH=arm defconfig $PRODUCT_CONFIG_FILE
 echo "===== Starting the build ====="
-schedtool -D -e make ARCH=arm CROSS_COMPILE=$CCOMPILER -j`grep 'processor' /proc/cpuinfo | wc -l` time
+schedtool -D -e make ARCH=arm CROSS_COMPILE=$CCOMPILER -j`grep 'processor' /proc/cpuinfo | wc -l`
 
 # Check to see if zImage is available, if not the build has failed, exit 
 # the script and do not continue packaging.
