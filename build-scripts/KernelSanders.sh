@@ -6,7 +6,7 @@ TOOLCHAIN=tools/toolchain/android-toolchain-eabi/bin/arm-linux-androideabi-
 # RAMDISK_FILES=ramdisk
 # MKRAMDISK=$T/tools/update-zip-tools/mkbootfs
 # MKBOOTIMG=$T/tools/update-zip-tools/mkbootimg
-VERSION=0.8.9
+VERSION=0.9.1
 DATE=$(date +%Y-%m-%d_%H":"%M)
 
 # Setup kangbang-defconfigs and build zImage
@@ -18,7 +18,8 @@ export CCOMPILER=$TOOLCHAIN
 echo "===== Setting up $PRODUCT defconfig ======"
 make ARCH=arm defconfig $PRODUCT_CONFIG_FILE
 echo "===== Starting the build ====="
-schedtool -D -e make ARCH=arm CROSS_COMPILE=$CCOMPILER -j`grep 'processor' /proc/cpuinfo | wc -l`
+schedtool -D -e make ARCH=arm CROSS_COMPILE=$CCOMPILER -j48
+#`grep 'processor' /proc/cpuinfo | wc -l`
 
 # Check to see if zImage is available, if not the build has failed, exit 
 # the script and do not continue packaging.
