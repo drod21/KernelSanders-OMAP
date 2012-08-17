@@ -17,7 +17,7 @@ mkdir -p $T/out
 # Product 1 setup
 
 echo "Now building $PRODUCT1 and packaging"
-./build-scripts/$PRODUCT1.sh
+time ./build-scripts/$PRODUCT1.sh
 
 if [ -f $T/out/$PRODUCT1/kernel/zImage ];
     then
