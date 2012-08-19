@@ -6,7 +6,7 @@ TOOLCHAIN=tools/toolchain/android-toolchain-eabi/bin/arm-linux-androideabi-
 # RAMDISK_FILES=ramdisk
 # MKRAMDISK=$T/tools/update-zip-tools/mkbootfs
 # MKBOOTIMG=$T/tools/update-zip-tools/mkbootimg
-VERSION=0.9.1
+VERSION=0.9.3
 DATE=$(date +%Y-%m-%d_%H":"%M)
 
 # Setup kangbang-defconfigs and build zImage
