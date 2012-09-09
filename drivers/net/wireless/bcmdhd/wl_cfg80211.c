@@ -71,7 +71,8 @@ u32 wl_dbg_level = WL_DBG_ERR;
 #define MAX_WAIT_TIME 1500
 #define WL_SCAN_ACTIVE_TIME	 40
 #define WL_SCAN_PASSIVE_TIME	130
-#define WL_FRAME_LEN			300
+#define WL_FRAME_LEN		300
+#define WL_SCAN_BUSY_MAX	 10
 
 #define DNGL_FUNC(func, parameters) func parameters;
 #define COEX_DHCP
