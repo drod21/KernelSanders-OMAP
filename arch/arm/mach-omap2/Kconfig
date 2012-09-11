@@ -365,6 +365,13 @@ config OMAP_ALLOW_OSWR
 	  Which means the Logic of power domains can be lost now
 	  unlike the CSWR wherein the logic is retained
 
+config CONSERVATIVE_GOV_WHILE_SCREEN_OFF
+	bool "Switch to Conservative governor while screen off"
+	default n
+	help
+	  Switch to Conservative CPU governor while screen off to save
+	  power
+
 config OMAP_FIQ_DEBUGGER
 	bool "Enable the serial FIQ debugger on OMAP"
 	default y
