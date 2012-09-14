@@ -92,14 +92,14 @@ static enum tune_values {
 	HIGH_PERF_TUNE
 } cur_tune_value;
 
-#define MIN_GO_HISPEED_LOAD 70
-#define DEFAULT_LOW_POWER_RATE 10
+#define MIN_GO_HISPEED_LOAD 80
+#define DEFAULT_LOW_POWER_RATE 25
 
 /* default number of sampling periods to average before hotplug-in decision */
-#define DEFAULT_SAMPLING_PERIODS 10
+#define DEFAULT_SAMPLING_PERIODS 15
 #define DEFAULT_HI_PERF_THRESHOLD 80
-#define DEFAULT_LOW_POWER_THRESHOLD 35
-#define MAX_MIN_SAMPLE_TIME (80 * USEC_PER_MSEC)
+#define DEFAULT_LOW_POWER_THRESHOLD 45
+#define MAX_MIN_SAMPLE_TIME (40 * USEC_PER_MSEC)
 
 /* Hi speed to bump to from lo speed when load burst (default max) */
 static u64 hispeed_freq;
