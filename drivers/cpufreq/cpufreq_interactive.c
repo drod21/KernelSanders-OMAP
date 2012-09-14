@@ -1280,7 +1280,7 @@ static int __init cpufreq_interactive_init(void)
 		goto err_freeuptask;
 
 	INIT_WORK(&freq_scale_down_work, cpufreq_interactive_freq_down);
-	INIT_WORK(&tune_work, cpu_freq_interactive_tune);
+	INIT_WORK(&tune_work, cpufreq_interactive_tune);
 	INIT_WORK(&inputopen.inputopen_work, cpufreq_interactive_input_open);
 
   /* NB: wake up so the thread does not look hung to the freezer */
