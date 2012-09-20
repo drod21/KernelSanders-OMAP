@@ -155,12 +155,12 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 
 #define OMAP4460_VDD_MPU_OPP25_UV		 825000
 #define OMAP4460_VDD_MPU_OPP50_UV		 890000
-#define OMAP4460_VDD_MPU_OPP75_UV		1015000
-#define OMAP4460_VDD_MPU_OPP100_UV		1100000
-#define OMAP4460_VDD_MPU_OPPTURBO_UV		1175000
-#define OMAP4460_VDD_MPU_OPPORIG_UV		1250000
-#define OMAP4460_VDD_MPU_OPPNITRO_UV		1275000
-#define OMAP4460_VDD_MPU_OPPNITROSB_UV		1350000
+#define OMAP4460_VDD_MPU_OPP75_UV		 975000
+#define OMAP4460_VDD_MPU_OPP100_UV		1050000
+#define OMAP4460_VDD_MPU_OPPTURBO_UV		1150000
+#define OMAP4460_VDD_MPU_OPPORIG_UV		1200000
+#define OMAP4460_VDD_MPU_OPPNITRO_UV		1250000
+#define OMAP4460_VDD_MPU_OPPNITROSB_UV		1300000
 
 struct omap_volt_data omap446x_vdd_mpu_volt_data[] = {
 	VOLT_DATA_DEFINE(OMAP4460_VDD_MPU_OPP25_UV, 10000, OMAP44XX_CONTROL_FUSE_MPU_OPP50, 0xf4, 0x0c, OMAP_ABB_NOMINAL_OPP),
@@ -187,7 +187,7 @@ struct omap_volt_data omap446x_vdd_iva_volt_data[] = {
 };
 
 #define OMAP4460_VDD_CORE_OPP10_UV		 830000
-#define OMAP4460_VDD_CORE_OPP50_UV		 962000
+#define OMAP4460_VDD_CORE_OPP50_UV		 950000
 #define OMAP4460_VDD_CORE_OPP100_UV		1100000
 #define OMAP4460_VDD_CORE_OPP100_OV_UV		1175000
 
@@ -237,9 +237,7 @@ struct omap_vdd_dep_info omap446x_vddiva_dep_info[] = {
 };
 
 static struct omap_opp_def __initdata omap446x_opp_def_list[] = {
-	/* MPU OPP1 - OPP25
-	** Disable for now. It's causing battery drain and instability
-	 */
+	/* MPU OPP1 - OPP25 */
 	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 230000000, OMAP4460_VDD_MPU_OPP25_UV),
 	/* MPU OPP2 - OPP50 */
 	OPP_INITIALIZER("mpu", "virt_dpll_mpu_ck", "mpu", true, 350000000, OMAP4460_VDD_MPU_OPP50_UV),
