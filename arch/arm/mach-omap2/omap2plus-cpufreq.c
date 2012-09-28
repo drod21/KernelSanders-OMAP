@@ -278,7 +278,6 @@ static int omap_target(struct cpufreq_policy *policy,
 	return ret;
 }
 
-#ifdef CONFIG_CONSERVATIVE_GOV_WHILE_SCREEN_OFF
 #define MAX_GOV_NAME_LEN 16
 static char cpufreq_default_gov[CONFIG_NR_CPUS][MAX_GOV_NAME_LEN];
 static char *cpufreq_conservative_gov = "conservative";
@@ -326,19 +325,18 @@ static int cpufreq_restore_default_gov(void)
 	}
 	return ret;
 }
-#endif
 
 static void omap_cpu_early_suspend(struct early_suspend *h)
 {
 	unsigned int cur;
 
 	mutex_lock(&omap_cpufreq_lock);
-#ifdef CONFIG_CONSERVATIVE_GOV_WHILE_SCREEN_OFF
+
 	cpufreq_store_default_gov();
 	if (cpufreq_change_gov(cpufreq_conservative_gov))
 		pr_err("Early_suspend: Error changing governor to %s\n",
 			cpufreq_conservative_gov);
-#endif
+
 	if (screen_off_max_freq) {
 		max_capped = screen_off_max_freq;
 
@@ -355,10 +353,9 @@ static void omap_cpu_late_resume(struct early_suspend *h)
 	unsigned int cur;
 
 	mutex_lock(&omap_cpufreq_lock);
-#ifdef CONFIG_CONSERVATIVE_GOV_WHILE_SCREEN_OFF
 	if (cpufreq_restore_default_gov())
 		pr_err("Early_suspend: Unable to restore governor\n");
-#endif
+
 	if (max_capped) {
 		max_capped = 0;
 
