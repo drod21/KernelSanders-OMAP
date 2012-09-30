@@ -4673,7 +4673,7 @@ static s32 wl_setup_wiphy(struct wireless_dev *wdev, struct device *sdiofunc_dev
 	/* wdev->wiphy->flags |= WIPHY_FLAG_SUPPORTS_FW_ROAM; */
 #endif
 	/* AP_SME flag can be advertised to remove patch from wpa_supplicant */
-	wdev->wiphy->flags |= WIPHY_FLAG_HAVE_AP_SME;
+	//wdev->wiphy->flags |= WIPHY_FLAG_HAVE_AP_SME;
 	WL_DBG(("Registering custom regulatory)\n"));
 	wdev->wiphy->flags |= WIPHY_FLAG_CUSTOM_REGULATORY;
 	wiphy_apply_custom_regulatory(wdev->wiphy, &brcm_regdom);
