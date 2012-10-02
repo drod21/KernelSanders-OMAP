@@ -42,6 +42,8 @@
 #include <linux/ethtool.h>
 #include <linux/fcntl.h>
 #include <linux/fs.h>
+#include <linux/module.h>
+#include <linux/moduleparam.h>
 
 #include <asm/uaccess.h>
 #include <asm/unaligned.h>
@@ -313,6 +315,14 @@ module_param(dhd_sysioc, uint, 0);
 /* Error bits */
 module_param(dhd_msg_level, int, 0);
 
+/* Wifi PM Mode */
+/* PM == true uses stock PM_MAX */
+/* PM == false uses PM_FAST */
+
+static bool wifi_pm = true;
+module_param(wifi_pm, bool, 0666);
+EXPORT_SYMBOL(wifi_pm);
+
 /* Watchdog interval */
 uint dhd_watchdog_ms = 10;
 module_param(dhd_watchdog_ms, uint, 0);
@@ -525,7 +535,9 @@ static void dhd_set_packet_filter(int value, dhd_pub_t *dhd)
 
 static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 {
-	int power_mode = PM_MAX;
+
+	int power_mode = ( wifi_pm ? PM_MAX : PM_FAST );
+
 	/* wl_pkt_filter_enable_t	enable_parm; */
 	char iovbuf[32];
 	int bcn_li_dtim = 3;
