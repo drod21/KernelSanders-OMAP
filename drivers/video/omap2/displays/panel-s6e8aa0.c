@@ -20,7 +20,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/moduleparam.h>
 #include <linux/debugfs.h>
 #include <linux/delay.h>
 #include <linux/err.h>
@@ -66,10 +65,6 @@ enum {
 
 #define DRIVER_NAME "s6e8aa0_i2c"
 #define DEVICE_NAME "s6e8aa0_i2c"
-
-static int contrast = -24;
-module_param(contrast, int, 0755);
-EXPORT_SYMBOL(contrast);
 
 #ifdef CONFIG_COLOR_HACK
 #include <linux/miscdevice.h>
@@ -786,7 +781,6 @@ static void s6e8aa0_setup_gamma_regs(struct s6e8aa0_data *s6, u8 gamma_regs[],
 
 		v[V255] = s6e8aa0_gamma_lookup(s6, brightness, BV_255, c);
 		offset = s6->gamma_reg_offsets.v[1][c][V255];
-		offset = offset - min(max(contrast, -32), 24);
 		adj_max = min(V255_ADJ_MAX, V255_ADJ_MAX - offset);
 		adj_min = max(0, 0 - offset);
 		adj = v255_to_v255adj(v[V255], v0) - offset;
