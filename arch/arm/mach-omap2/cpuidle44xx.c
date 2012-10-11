@@ -135,7 +135,7 @@ static __initdata struct cpuidle_params omap443x_cpuidle_params_table[] = {
 		.target_residency = 10000,
 		.valid = 1,
 	},
-	/* C4 - CPUx OFF + MPU CSWR + CORE OSWR */
+	/* C4 - CPUx OFF + MPU OSWR + CORE OSWR */
 	{
 		.exit_latency = 5200,
 		.target_residency = 35000,
@@ -152,20 +152,20 @@ static __initdata struct cpuidle_params omap446x_cpuidle_params_table[] = {
 	},
 	/* C2 - CPUx OFF + MPU INA  + CORE INA */
 	{
-		.exit_latency = 300,
-		.target_residency = 1800,
+		.exit_latency = 1090,
+		.target_residency = 1090,
 		.valid = 1,
 	},
 	/* C3 - CPUx OFF + MPU CSWR + CORE OSWR */
 	{
-		.exit_latency = 4000,
-		.target_residency = 4000,
+		.exit_latency = 1210,
+		.target_residency = 1210,
 		.valid = 1,
 	},
-	/* C4 - CPUx OFF + MPU CSWR + CORE OSWR */
+	/* C4 - CPUx OFF + MPU OSWR + CORE OSWR */
 	{
-		.exit_latency = 4200,
-		.target_residency = 4200,
+		.exit_latency = 1350,
+		.target_residency = 1350,
 		.valid = CPU_IDLE_ALLOW_OSWR,
 	},
 };
