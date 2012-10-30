@@ -834,7 +834,6 @@ static void __exit cpufreq_interactive_exit(void)
 #endif
 	kthread_stop(speedchange_task);
 	put_task_struct(speedchange_task);
-	destroy_workqueue(inputopen_wq);
 }
 
 module_exit(cpufreq_interactive_exit);
