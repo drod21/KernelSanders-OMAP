@@ -193,9 +193,9 @@ static struct regulator_init_data tuna_vmmc5 = {
 
 static struct fixed_voltage_config tuna_vwlan = {
 	.supply_name = "vwl1271",
-	.microvolts = 2000000, /* 2.0V */
+	.microvolts = 1800000, /* 1.8V */
 	.gpio = GPIO_WLAN_PMENA,
-	.startup_delay = 70000, /* 70msec */
+	.startup_delay = 60000, /* 60msec */
 	.enable_high = 1,
 	.enabled_at_boot = 0,
 	.init_data = &tuna_vmmc5,
