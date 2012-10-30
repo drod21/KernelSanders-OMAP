@@ -58,6 +58,12 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
 	  the frequency statically to the highest frequency supported by
 	  the CPU.
 
+config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
+	bool "performance"
+	select CPU_FREQ_GOV_PEGASUSQ
+	help
+	  Use the PegasusQ governor as default.	
+
 config CPU_FREQ_DEFAULT_GOV_POWERSAVE
 	bool "powersave"
 	depends on EXPERT
@@ -176,6 +182,14 @@ config CPU_FREQ_GOV_ONDEMAND
 	  module will be called cpufreq_ondemand.
 
 	  For details, take a look at linux/Documentation/cpu-freq.
+
+	  If in doubt, say N.
+
+config CPU_FREQ_GOV_PEGASUSQ
+	tristate "'pegasusq' cpufreq policy governor"
+	select CPU_FREQ_TABLE
+	help
+	  'PegasusQ' governor designed by Samsung for multi-core support.
 
 	  If in doubt, say N.
 
