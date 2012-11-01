@@ -427,7 +427,7 @@ static struct max17040_platform_data max17043_pdata = {
 	.low_block_temp = LOW_BLOCK_TEMP_MAGURO,
 	.low_recover_temp = LOW_RECOVER_TEMP_MAGURO,
 	.fully_charged_vol = 4150000,
-	.recharge_vol = 4140000,
+	.recharge_vol = 4150000,
 	.limit_charging_time = 21600,  /* 6 hours */
 	.limit_recharging_time = 5400, /* 90 min */
 };
