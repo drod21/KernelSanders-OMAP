@@ -555,7 +555,7 @@ static inline void __free_one_page(struct page *page,
 		combined_idx = buddy_idx & page_idx;
 		higher_page = page + (combined_idx - page_idx);
 		buddy_idx = __find_buddy_index(combined_idx, order + 1);
-		higher_buddy = higher_page + (buddy_idx - combined_idx);
+		higher_buddy = page + (buddy_idx - combined_idx);
 		if (page_is_buddy(higher_page, higher_buddy, order + 1)) {
 			list_add_tail(&page->lru,
 				&zone->free_area[order].free_list[migratetype]);
@@ -1912,19 +1912,13 @@ static struct page *
 __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
 	nodemask_t *nodemask, int alloc_flags, struct zone *preferred_zone,
-	int migratetype, bool sync_migration,
-	bool *deferred_compaction,
-	unsigned long *did_some_progress)
+	int migratetype, unsigned long *did_some_progress,
+	bool sync_migration)
 {
 	struct page *page;
 
-	if (!order)
+	if (!order || compaction_deferred(preferred_zone))
 		return NULL;
-
-	if (compaction_deferred(preferred_zone)) {
-		*deferred_compaction = true;
-		return NULL;
-	}
 
 	current->flags |= PF_MEMALLOC;
 	*did_some_progress = try_to_compact_pages(zonelist, order, gfp_mask,
@@ -1953,13 +1947,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 		 * but not enough to satisfy watermarks.
 		 */
 		count_vm_event(COMPACTFAIL);
-
-		/*
-		 * As async compaction considers a subset of pageblocks, only
-		 * defer if the failure was a sync compaction failure.
-		 */
-		if (sync_migration)
-			defer_compaction(preferred_zone);
+		defer_compaction(preferred_zone);
 
 		cond_resched();
 	}
@@ -1971,9 +1959,8 @@ static inline struct page *
 __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
 	nodemask_t *nodemask, int alloc_flags, struct zone *preferred_zone,
-	int migratetype, bool sync_migration,
-	bool *deferred_compaction,
-	unsigned long *did_some_progress)
+	int migratetype, unsigned long *did_some_progress,
+	bool sync_migration)
 {
 	return NULL;
 }
@@ -2123,7 +2110,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	unsigned long pages_reclaimed = 0;
 	unsigned long did_some_progress;
 	bool sync_migration = false;
-	bool deferred_compaction = false;
 
 	/*
 	 * In the slowpath, we sanity check order to avoid ever trying to
@@ -2204,21 +2190,11 @@ rebalance:
 					zonelist, high_zoneidx,
 					nodemask,
 					alloc_flags, preferred_zone,
-					migratetype, sync_migration,
-					&deferred_compaction,
-					&did_some_progress);
+					migratetype, &did_some_progress,
+					sync_migration);
 	if (page)
 		goto got_pg;
 	sync_migration = true;
-
-	/*
-	 * If compaction is deferred for high-order allocations, it is because
-	 * sync compaction recently failed. In this is the case and the caller
-	 * has requested the system not be heavily disrupted, fail the
-	 * allocation now instead of entering direct reclaim
-	 */
-	if (deferred_compaction && (gfp_mask & __GFP_NO_KSWAPD))
-		goto nopage;
 
 	/* Try direct reclaim and then allocating */
 	page = __alloc_pages_direct_reclaim(gfp_mask, order,
@@ -2290,9 +2266,8 @@ rebalance:
 					zonelist, high_zoneidx,
 					nodemask,
 					alloc_flags, preferred_zone,
-					migratetype, sync_migration,
-					&deferred_compaction,
-					&did_some_progress);
+					migratetype, &did_some_progress,
+					sync_migration);
 		if (page)
 			goto got_pg;
 	}
@@ -2316,9 +2291,8 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 {
 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
 	struct zone *preferred_zone;
-	struct page *page = NULL;
+	struct page *page;
 	int migratetype = allocflags_to_migratetype(gfp_mask);
-	unsigned int cpuset_mems_cookie;
 
 	gfp_mask &= gfp_allowed_mask;
 
@@ -2337,15 +2311,15 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	if (unlikely(!zonelist->_zonerefs->zone))
 		return NULL;
 
-retry_cpuset:
-	cpuset_mems_cookie = get_mems_allowed();
-
+	get_mems_allowed();
 	/* The preferred zone is used for statistics later */
 	first_zones_zonelist(zonelist, high_zoneidx,
 				nodemask ? : &cpuset_current_mems_allowed,
 				&preferred_zone);
-	if (!preferred_zone)
-		goto out;
+	if (!preferred_zone) {
+		put_mems_allowed();
+		return NULL;
+	}
 
 	/* First allocation attempt */
 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
@@ -2355,19 +2329,9 @@ retry_cpuset:
 		page = __alloc_pages_slowpath(gfp_mask, order,
 				zonelist, high_zoneidx, nodemask,
 				preferred_zone, migratetype);
+	put_mems_allowed();
 
 	trace_mm_page_alloc(page, order, gfp_mask, migratetype);
-
-out:
-	/*
-	 * When updating a task's mems_allowed, it is possible to race with
-	 * parallel threads in such a way that an allocation can fail while
-	 * the mask is being updated. If a page allocation is about to fail,
-	 * check if the cpuset changed during allocation and if so, retry.
-	 */
-	if (unlikely(!put_mems_allowed(cpuset_mems_cookie) && !page))
-		goto retry_cpuset;
-
 	return page;
 }
 EXPORT_SYMBOL(__alloc_pages_nodemask);
@@ -2591,15 +2555,13 @@ void si_meminfo_node(struct sysinfo *val, int nid)
 bool skip_free_areas_node(unsigned int flags, int nid)
 {
 	bool ret = false;
-	unsigned int cpuset_mems_cookie;
 
 	if (!(flags & SHOW_MEM_FILTER_NODES))
 		goto out;
 
-	do {
-		cpuset_mems_cookie = get_mems_allowed();
-		ret = !node_isset(nid, cpuset_current_mems_allowed);
-	} while (!put_mems_allowed(cpuset_mems_cookie));
+	get_mems_allowed();
+	ret = !node_isset(nid, cpuset_current_mems_allowed);
+	put_mems_allowed();
 out:
 	return ret;
 }
@@ -3479,33 +3441,25 @@ static void setup_zone_migrate_reserve(struct zone *zone)
 		if (page_to_nid(page) != zone_to_nid(zone))
 			continue;
 
+		/* Blocks with reserved pages will never free, skip them. */
+		block_end_pfn = min(pfn + pageblock_nr_pages, end_pfn);
+		if (pageblock_is_reserved(pfn, block_end_pfn))
+			continue;
+
 		block_migratetype = get_pageblock_migratetype(page);
 
-		/* Only test what is necessary when the reserves are not met */
-		if (reserve > 0) {
-			/*
-			 * Blocks with reserved pages will never free, skip
-			 * them.
-			 */
-			block_end_pfn = min(pfn + pageblock_nr_pages, end_pfn);
-			if (pageblock_is_reserved(pfn, block_end_pfn))
-				continue;
+		/* If this block is reserved, account for it */
+		if (reserve > 0 && block_migratetype == MIGRATE_RESERVE) {
+			reserve--;
+			continue;
+		}
 
-			/* If this block is reserved, account for it */
-			if (block_migratetype == MIGRATE_RESERVE) {
-				reserve--;
-				continue;
-			}
-
-			/* Suitable for reserving if this block is movable */
-			if (block_migratetype == MIGRATE_MOVABLE) {
-				set_pageblock_migratetype(page,
-							MIGRATE_RESERVE);
-				move_freepages_block(zone, page,
-							MIGRATE_RESERVE);
-				reserve--;
-				continue;
-			}
+		/* Suitable for reserving if this block is movable */
+		if (reserve > 0 && block_migratetype == MIGRATE_MOVABLE) {
+			set_pageblock_migratetype(page, MIGRATE_RESERVE);
+			move_freepages_block(zone, page, MIGRATE_RESERVE);
+			reserve--;
+			continue;
 		}
 
 		/*
