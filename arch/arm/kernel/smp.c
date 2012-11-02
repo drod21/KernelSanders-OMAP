@@ -293,6 +293,7 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	cpu_switch_mm(mm->pgd, mm);
 	enter_lazy_tlb(mm, current);
 	local_flush_tlb_all();
+//	printk("CPU%u: Booted secondary processor\n", cpu);
 
 	cpu_init();
 	preempt_disable();
@@ -323,13 +324,6 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	 */
 	percpu_timer_setup();
 
-	while (!cpu_active(cpu))
-		cpu_relax();
-
-	/*
-	 * cpu_active bit is set, so it's safe to enable interrupts
-	 * now.
-	 */
 	local_irq_enable();
 	local_fiq_enable();
 
