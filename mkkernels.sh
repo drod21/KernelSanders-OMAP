@@ -22,7 +22,7 @@ time schedtool -D -e ./build-scripts/$PRODUCT1.sh
 if [ -f $T/out/$PRODUCT1/kernel/zImage ];
     then
         echo "$PRODUCT1 found"
-#	cp out/$PRODUCT1/*.zip /home/drod2169/Dropbox/drod
+	cp out/$PRODUCT1/*.zip /home/drod2169/Dropbox/drod
     else
         echo "$PRODUCT1 did not compile successfully, please fix your shit"
 fi
