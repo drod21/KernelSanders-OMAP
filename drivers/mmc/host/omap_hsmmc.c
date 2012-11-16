@@ -2407,11 +2407,6 @@ static int omap_hsmmc_resume(struct device *dev)
 	}
 
 	return ret;
-
-clk_en_err:
-	dev_dbg(mmc_dev(host->mmc),
-		"Failed to enable MMC clocks during resume\n");
-	return ret;
 }
 
 #else
